@@ -29,6 +29,8 @@ const CATEGORIES = [
 const CITIES = ['بغداد','البصرة','الموصل','أربيل','النجف','كربلاء','كركوك','الأنبار','بابل',
   'ديالى','ذي قار','السليمانية','دهوك','واسط','ميسان','المثنى','صلاح الدين','القادسية'];
 
+const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"%3E%3Crect width="800" height="600" fill="%23eef2f7"/%3E%3Cpath d="M250 390l90-105 75 82 60-65 125 138H200z" fill="%23cbd5e1"/%3E%3Ccircle cx="520" cy="220" r="48" fill="%23cbd5e1"/%3E%3Ctext x="400" y="500" text-anchor="middle" font-family="Arial" font-size="28" fill="%2364758b"%3Eلا توجد صورة%3C/text%3E%3C/svg%3E';
+
 /* ============ 2) أدوات مساعدة ============ */
 const $  = (s,r=document)=>r.querySelector(s);
 const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
@@ -104,69 +106,21 @@ let filters = { q:'', cat:'all', city:'all', min:'', max:'', sort:'new' };
 let pendingImages = [];
 let activeChat = null;
 
-/* ============ 5) البيانات التجريبية ============ */
+/* ============ 5) تنظيف بيانات العرض القديمة ============ */
 function seed(){
-  if(store.get('sq_seeded_v3',false)) return;
+  const demoUserIds = new Set(['u_demo1','u_demo2']);
+  const hadDemoData = users.some(u=>demoUserIds.has(u.id)) ||
+    listings.some(l=>demoUserIds.has(l.userId) || (l.images||[]).some(img=>String(img).includes('picsum.photos')));
+  if(!hadDemoData) return;
 
-  const demoUsers = [
-    {id:'u_demo1', name:'أحمد للموبايلات', phone:'07701112233', city:'بغداد', pass:'123456',
-     ts:Date.now()-86400000*40, verified:true, bio:'متخصص ببيع الموبايلات الأصلية بضمان سنة'},
-    {id:'u_demo2', name:'معرض النخبة للسيارات', phone:'07811112233', city:'البصرة', pass:'123456',
-     ts:Date.now()-86400000*30, verified:true, bio:'معرض سيارات موثوق — بيع وشراء وتبديل'}
-  ];
-
-  const now = Date.now();
-  const demoListings = [
-    {id:uid(), userId:'u_demo1', title:'آيفون 15 برو ماكس 256GB — أصلي بالكرتون',
-     price:1750000, cat:'mobiles', city:'بغداد', phone:'07701112233',
-     desc:'آيفون 15 برو ماكس، ذاكرة 256GB، لون تيتانيوم طبيعي.\nالحالة: جديد بالكرتون ومفتوح للفحص فقط.\nالبطارية 100%، ضمان سنة، مع كامل الملحقات.',
-     images:['https://picsum.photos/seed/iphone15/800/600','https://picsum.photos/seed/phone2/800/600'],
-     featured:true, views:412, ts:now-3600000*3},
-
-    {id:uid(), userId:'u_demo2', title:'تويوتا كامري 2021 — فل أوبشن بحالة الوكالة',
-     price:32500000, cat:'cars', city:'البصرة', phone:'07811112233',
-     desc:'تويوتا كامري موديل 2021، ماشية 45,000 كم فقط.\nالسيارة بحالة الوكالة، صبغ الشركة، بدون حوادث.\nفل أوبشن: فتحة سقف، كاميرا، شاشة، مثبت سرعة.',
-     images:['https://picsum.photos/seed/camry/800/600','https://picsum.photos/seed/car2/800/600'],
-     featured:true, views:1204, ts:now-3600000*9},
-
-    {id:uid(), userId:'u_demo1', title:'لابتوب Dell XPS 15 — i7 الجيل 12',
-     price:1250000, cat:'electronics', city:'أربيل', phone:'07701112233',
-     desc:'لابتوب Dell XPS 15، معالج i7 الجيل 12، رام 16GB، هارد SSD 512GB.\nمستعمل بحالة ممتازة مع الشاحن الأصلي.',
-     images:['https://picsum.photos/seed/laptop9/800/600'],
-     featured:false, views:188, ts:now-3600000*20},
-
-    {id:uid(), userId:'u_demo2', title:'شقة 120م² للبيع — حي الجامعة، تشطيب حديث',
-     price:145000000, cat:'realestate', city:'بغداد', phone:'07811112233',
-     desc:'شقة سكنية 120 متر مربع، الطابق الثاني، حي الجامعة.\nغرفتين نوم + صالة + مطبخ + حمام + بلكونة.',
-     images:['https://picsum.photos/seed/apartment7/800/600','https://picsum.photos/seed/room5/800/600'],
-     featured:false, views:640, ts:now-3600000*30},
-
-    {id:uid(), userId:'u_demo1', title:'طقم كنب 7 مقاعد — جلد تركي فاخر',
-     price:950000, cat:'furniture', city:'النجف', phone:'07701112233',
-     desc:'طقم كنب 7 مقاعد، جلد تركي أصلي، لون بيج. جديد لم يُستعمل.',
-     images:['https://picsum.photos/seed/sofa3/800/600'],
-     featured:false, views:97, ts:now-3600000*48},
-
-    {id:uid(), userId:'u_demo2', title:'ساعة أبل Watch Ultra 2 — أصلية',
-     price:620000, cat:'electronics', city:'الموصل', phone:'07811112233',
-     desc:'Apple Watch Ultra 2، 49mm، تيتانيوم. أصلية 100%، مع الكرتون والملحقات.',
-     images:['https://picsum.photos/seed/watch4/800/600'],
-     featured:false, views:265, ts:now-3600000*60}
-  ];
-
-  users = demoUsers;
-  listings = demoListings;
-
-  reviews = [
-    {id:uid(), targetId:'u_demo1', authorId:'u_demo2', rating:5, text:'تعامل راقي وسريع، الجهاز مطابق للوصف تماماً', ts:now-86400000*3},
-    {id:uid(), targetId:'u_demo1', authorId:'u_demo2', rating:4, text:'بائع محترم، أنصح بالتعامل معه', ts:now-86400000*10},
-    {id:uid(), targetId:'u_demo2', authorId:'u_demo1', rating:5, text:'سيارة نظيفة وصادق بكل كلمة، شكراً', ts:now-86400000*5}
-  ];
-
-  store.set(K.users,users);
-  store.set(K.listings,listings);
-  store.set(K.reviews,reviews);
-  store.set('sq_seeded_v3',true);
+  users = users.filter(u=>!demoUserIds.has(u.id));
+  listings = listings.filter(l=>!demoUserIds.has(l.userId) && !(l.images||[]).some(img=>String(img).includes('picsum.photos')));
+  reviews = reviews.filter(r=>!demoUserIds.has(r.targetId) && !demoUserIds.has(r.authorId));
+  favs = favs.filter(f=>!demoUserIds.has(f.userId));
+  msgs = msgs.filter(m=>!demoUserIds.has(m.from) && !demoUserIds.has(m.to));
+  notifs = notifs.filter(n=>!demoUserIds.has(n.userId));
+  store.set(K.users,users); store.set(K.listings,listings); store.set(K.reviews,reviews);
+  store.set(K.favs,favs); store.set(K.msgs,msgs); store.set(K.notifs,notifs);
 }
 
 /* ============ 6) الترجمة ============ */
@@ -405,7 +359,7 @@ function avgRating(userId){
 
 /* ============ 12) بطاقة المنتج ============ */
 function cardHTML(l){
-  const img = (l.images && l.images[0]) ? l.images[0] : 'https://picsum.photos/seed/'+l.id+'/600/450';
+  const img = (l.images && l.images[0]) ? l.images[0] : PLACEHOLDER_IMAGE;
   const isFav = currentUser && favs.some(f=>f.userId===currentUser.id && f.listingId===l.id);
   const seller = users.find(u=>u.id===l.userId) || {};
   const r = avgRating(l.userId);
@@ -414,7 +368,7 @@ function cardHTML(l){
   return `<article class="card" data-id="${l.id}">
     <div class="card-media">
       <img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy"
-           onerror="this.src='https://picsum.photos/seed/${l.id}/600/450'"/>
+           onerror="this.src='${PLACEHOLDER_IMAGE}'"/>
       <button class="fav-toggle ${isFav?'on':''}" data-fav="${l.id}">
         <svg class="ic" style="width:19px;height:19px"><use href="#i-heart"/></svg>
       </button>
@@ -495,7 +449,7 @@ function openDetail(id){
   pushRecent(id);
 
   const seller = users.find(u=>u.id===l.userId) || {name:'مستخدم', city:'—'};
-  const imgs = (l.images && l.images.length) ? l.images : ['https://picsum.photos/seed/'+l.id+'/800/600'];
+  const imgs = (l.images && l.images.length) ? l.images : [PLACEHOLDER_IMAGE];
   const isFav = currentUser && favs.some(f=>f.userId===currentUser.id && f.listingId===l.id);
   const isMine = currentUser && currentUser.id===l.userId;
 
@@ -547,7 +501,7 @@ function openDetail(id){
         <div style="font-weight:800;margin-bottom:10px">🔍 إعلانات مشابهة</div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
           ${similar.map(s=>{
-            const im = (s.images&&s.images[0])||'https://picsum.photos/seed/'+s.id+'/200/150';
+            const im = (s.images&&s.images[0])||PLACEHOLDER_IMAGE;
             return `<div class="conv" data-similar="${s.id}" style="padding:8px">
               <img src="${esc(im)}" style="width:50px;height:50px;border-radius:9px;object-fit:cover;flex:none"/>
               <div class="conv-body">
@@ -739,7 +693,7 @@ function setupAddForm(){
         views: 0, ts: Date.now()
       };
 
-      if(!l.images.length) l.images = ['https://picsum.photos/seed/'+l.id+'/800/600'];
+      if(!l.images.length) l.images = [PLACEHOLDER_IMAGE];
 
       listings.unshift(l);
       if(!store.set(K.listings,listings)) return;
@@ -773,7 +727,7 @@ function openFav(){
   if(!favBox) return;
 
   favBox.innerHTML = items.length ? items.map(l=>{
-    const img = (l.images&&l.images[0])||'https://picsum.photos/seed/'+l.id+'/200/150';
+    const img = (l.images&&l.images[0])||PLACEHOLDER_IMAGE;
     return `<div class="conv" data-open="${l.id}">
       <img src="${esc(img)}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none"/>
       <div class="conv-body">
@@ -805,7 +759,7 @@ function openMy(){
   if(!myBox) return;
 
   myBox.innerHTML = items.length ? items.map(l=>{
-    const img = (l.images&&l.images[0])||'https://picsum.photos/seed/'+l.id+'/200/150';
+    const img = (l.images&&l.images[0])||PLACEHOLDER_IMAGE;
     return `<div class="conv" data-open="${l.id}">
       <img src="${esc(img)}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none"/>
       <div class="conv-body">
@@ -1212,7 +1166,7 @@ function renderSuggest(q){
     .slice(0,6);
   if(!matches.length){ sug.classList.remove('open'); return; }
   sug.innerHTML = matches.map(l=>{
-    const img = (l.images&&l.images[0])||'https://picsum.photos/seed/'+l.id+'/60/60';
+    const img = (l.images&&l.images[0])||PLACEHOLDER_IMAGE;
     return `<div class="suggest-item" data-sug="${l.id}">
       <img src="${esc(img)}" style="width:36px;height:36px;border-radius:8px;object-fit:cover"/>
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.title)}</span>
@@ -1736,7 +1690,7 @@ function openMy(){
   const items=listings.filter(l=>l.userId===currentUser.id).sort((a,b)=>b.ts-a.ts);
   const myBox=$('#myBox'); if(!myBox) return;
   myBox.innerHTML=items.length ? items.map(l=>{
-    const img=(l.images&&l.images[0])||'https://picsum.photos/seed/'+l.id+'/200/150';
+    const img=(l.images&&l.images[0])||PLACEHOLDER_IMAGE;
     return `<div class="conv my-listing-row" data-open="${l.id}">
       <img src="${esc(img)}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none"/>
       <div class="conv-body">
