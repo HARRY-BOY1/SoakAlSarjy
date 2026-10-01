@@ -42,11 +42,11 @@
   --shadow:0 4px 16px -4px rgba(0,0,0,.5);
   --shadow-lg:0 24px 60px -20px rgba(0,0,0,.75);
 }
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;width:100%;max-width:100%;overflow-x:hidden}
 body{
   font-family:'Segoe UI',Tahoma,system-ui,-apple-system,'Noto Kufi Arabic',sans-serif;
   background:var(--bg);color:var(--text);line-height:1.6;
-  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden;
 }
 img{max-width:100%;display:block}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
@@ -81,7 +81,7 @@ a{color:inherit;text-decoration:none}
 .header{background:var(--card);box-shadow:var(--shadow);position:sticky;top:0;z-index:100}
 .header-inner{
   display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;
-  padding:16px 0;
+  padding:16px 0;min-width:0;
 }
 .logo{display:flex;align-items:center;gap:11px;flex:none}
 .logo-mark{
@@ -145,7 +145,7 @@ a{color:inherit;text-decoration:none}
 }
 .search-hot a:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
 
-.header-actions{display:flex;align-items:center;gap:8px}
+.header-actions{display:flex;align-items:center;gap:8px;min-width:0}
 .action-btn{
   position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;
   padding:6px 10px;border-radius:10px;color:var(--text);transition:.2s;min-width:60px;
@@ -866,6 +866,13 @@ textarea.inp{resize:vertical;min-height:110px;line-height:1.7}
   .header-inner{padding-block:10px}
   .logo-mark{width:40px;height:40px;border-radius:11px;font-size:20px}
   .logo-title{font-size:15px}
+  .logo-text{max-width:118px;min-width:0}
+  .header-actions{overflow:hidden;gap:1px}
+  .header-actions > .action-btn{flex:0 0 34px}
+  .header-actions #addBtn{flex:0 0 40px}
+  #loginBtn{width:40px;min-width:40px;padding:9px;font-size:0;color:transparent!important;gap:0;overflow:hidden}
+  #loginBtn .ic{width:20px;height:20px;margin:0;color:var(--text)}
+  #loginBtn .login-label{display:none}
   .header-actions .action-btn{padding-inline:4px}
   .header-actions .action-btn .ic{width:20px;height:20px}
   .header-actions #addBtn{padding:9px 10px}
@@ -903,6 +910,9 @@ textarea.inp{resize:vertical;min-height:110px;line-height:1.7}
   .search-tags a{padding:7px 10px;font-size:12px}
   .detail-actions-row .btn{flex:1 1 calc(50% - 8px)}
   .thumb{width:68px;height:68px}
+  .section-head,.products-header{min-width:0}
+  .section-head h2,.products-title{min-width:0;overflow-wrap:anywhere}
+  .modal,.modal-body,.detail,.detail-info,.detail-actions-row{min-width:0}
 }
 
 @media (max-width: 360px){

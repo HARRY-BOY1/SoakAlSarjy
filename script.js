@@ -313,7 +313,7 @@ function renderAuth(){
     };
   } else {
     area.innerHTML = `<button class="btn btn-ghost" id="loginBtn">
-      <svg class="ic"><use href="#i-user"/></svg> دخول
+      <svg class="ic"><use href="#i-user"/></svg><span class="login-label">دخول</span>
     </button>`;
     $('#loginBtn').onclick = ()=>openAuth('login');
   }
