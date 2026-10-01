@@ -1,5 +1,5 @@
 /* =========================================================
-   سوق الشرجي — Pella / Express Server
+   سوق الشورجة — Pella / Express Server
    جاهز للاستضافة على Pella Express
    ========================================================= */
 const express = require('express');
@@ -241,7 +241,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, HOST, () => {
   console.log('');
   console.log('╔════════════════════════════════════════════╗');
-  console.log('║   🛒 سوق الشرجي — Pella Express Server     ║');
+  console.log('║   سوق الشورجة — Pella Express Server      ║');
   console.log('╚════════════════════════════════════════════╝');
   console.log(`✅ Listening on ${HOST}:${PORT}`);
   console.log(`🌐 Public URL is supplied by Pella`);

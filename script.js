@@ -1,5 +1,5 @@
 /* =========================================================
-   سوق الشرجي — السكربت الرئيسي الكامل
+   سوق الشورجة — السكربت الرئيسي الكامل
    ========================================================= */
 
 /* ============ 1) الثوابت ============ */
@@ -12,18 +12,18 @@ const K = {
 };
 
 const CATEGORIES = [
-  {id:'cars',        name:'سيارات',     nameEn:'Cars',         em:'🚗'},
-  {id:'realestate',  name:'عقارات',     nameEn:'Real Estate',  em:'🏠'},
-  {id:'electronics', name:'إلكترونيات', nameEn:'Electronics',  em:'💻'},
-  {id:'mobiles',     name:'موبايلات',   nameEn:'Mobiles',      em:'📱'},
-  {id:'furniture',   name:'أثاث',       nameEn:'Furniture',    em:'🛋️'},
-  {id:'fashion',     name:'أزياء',      nameEn:'Fashion',      em:'👕'},
-  {id:'jobs',        name:'وظائف',      nameEn:'Jobs',         em:'💼'},
-  {id:'services',    name:'خدمات',      nameEn:'Services',     em:'🛠️'},
-  {id:'animals',     name:'حيوانات',    nameEn:'Animals',      em:'🐾'},
-  {id:'games',       name:'ألعاب',      nameEn:'Games',        em:'🎮'},
-  {id:'sports',      name:'رياضة',      nameEn:'Sports',       em:'⚽'},
-  {id:'other',       name:'أخرى',       nameEn:'Other',        em:'📦'}
+  {id:'cars',        name:'سيارات',     nameEn:'Cars',         icon:'car'},
+  {id:'realestate',  name:'عقارات',     nameEn:'Real Estate',  icon:'home'},
+  {id:'electronics', name:'إلكترونيات', nameEn:'Electronics',  icon:'device-laptop'},
+  {id:'mobiles',     name:'موبايلات',   nameEn:'Mobiles',      icon:'device-mobile'},
+  {id:'furniture',   name:'أثاث',       nameEn:'Furniture',    icon:'sofa'},
+  {id:'fashion',     name:'أزياء',      nameEn:'Fashion',      icon:'shirt'},
+  {id:'jobs',        name:'وظائف',      nameEn:'Jobs',         icon:'briefcase'},
+  {id:'services',    name:'خدمات',      nameEn:'Services',     icon:'tools'},
+  {id:'animals',     name:'حيوانات',    nameEn:'Animals',      icon:'paw'},
+  {id:'games',       name:'ألعاب',      nameEn:'Games',        icon:'device-gamepad-2'},
+  {id:'sports',      name:'رياضة',      nameEn:'Sports',       icon:'ball-football'},
+  {id:'other',       name:'أخرى',       nameEn:'Other',         icon:'package'}
 ];
 
 const CITIES = ['بغداد','البصرة','الموصل','أربيل','النجف','كربلاء','كركوك','الأنبار','بابل',
@@ -39,7 +39,8 @@ const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
 const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const esc = (s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = n=>Number(n||0).toLocaleString('en-US');
-const catObj = id=>CATEGORIES.find(c=>c.id===id)||{name:'أخرى',nameEn:'Other',em:'📦'};
+const iconHTML = (name, className='ui-icon') => `<img class="${className}" src="assets/icons/${esc(name)}.svg" alt="" aria-hidden="true"/>`;
+const catObj = id=>CATEGORIES.find(c=>c.id===id)||{name:'أخرى',nameEn:'Other',icon:'package'};
 
 function timeAgo(ts){
   const d = Math.floor((Date.now()-ts)/1000);
@@ -163,8 +164,8 @@ function toggleTheme(){
 function renderCategories(){
   const bar = $('#catsBar');
   if(!bar) return;
-  bar.innerHTML = `<button class="cat active" data-cat="all"><span class="em">🗂️</span> الكل</button>` +
-    CATEGORIES.map(c=>`<button class="cat" data-cat="${c.id}"><span class="em">${c.em}</span> ${c.name}</button>`).join('');
+  bar.innerHTML = `<button class="cat active" data-cat="all">${iconHTML('package')} الكل</button>` +
+    CATEGORIES.map(c=>`<button class="cat" data-cat="${c.id}">${iconHTML(c.icon)} ${c.name}</button>`).join('');
 
   bar.onclick = e=>{
     const b = e.target.closest('.cat'); if(!b) return;
@@ -178,7 +179,7 @@ function renderSideCats(){
   if(!body) return;
   body.innerHTML = CATEGORIES.map(c=>`
     <div class="side-cat-item" data-cat="${c.id}">
-      <span class="em">${c.em}</span> ${c.name}
+      ${iconHTML(c.icon)} ${c.name}
     </div>
   `).join('');
 
@@ -194,7 +195,7 @@ function renderQuickCats(){
   if(!grid) return;
   grid.innerHTML = CATEGORIES.slice(0,12).map(c=>`
     <div class="qcat" data-cat="${c.id}">
-      <div class="qcat-em">${c.em}</div>
+      <div class="qcat-em">${iconHTML(c.icon)}</div>
       <b>${c.name}</b>
     </div>
   `).join('');
@@ -209,8 +210,8 @@ function renderQuickCats(){
 function renderFilterCats(){
   const box = $('#filterCats');
   if(!box) return;
-  box.innerHTML = `<div class="filter-cat-item active" data-cat="all">🗂️ الكل</div>` +
-    CATEGORIES.map(c=>`<div class="filter-cat-item" data-cat="${c.id}"><span class="em">${c.em}</span> ${c.name}</div>`).join('');
+  box.innerHTML = `<div class="filter-cat-item active" data-cat="all">${iconHTML('package')} الكل</div>` +
+    CATEGORIES.map(c=>`<div class="filter-cat-item" data-cat="${c.id}">${iconHTML(c.icon)} ${c.name}</div>`).join('');
 
   box.onclick = e=>{
     const item = e.target.closest('[data-cat]');
@@ -377,7 +378,7 @@ function cardHTML(l){
       <button class="fav-toggle ${isFav?'on':''}" data-fav="${l.id}">
         <svg class="ic" style="width:19px;height:19px"><use href="#i-heart"/></svg>
       </button>
-      ${l.featured ? '<span class="tag">⭐ مميز</span>' : ''}
+      ${l.featured ? `<span class="tag">${iconHTML('star')} مميز</span>` : ''}
       ${seller.verified ? '<span class="verified-tag"><svg class="ic"><use href="#i-shield"/></svg> موثّق</span>' : ''}
     </div>
     <div class="card-body">
@@ -482,7 +483,7 @@ function openDetail(id){
       <h2 class="detail-title">${esc(l.title)}</h2>
 
       <div class="chips">
-        <span class="chip"><svg class="ic"><use href="#i-tag"/></svg>${catObj(l.cat).em} ${catObj(l.cat).name}</span>
+        <span class="chip">${iconHTML(catObj(l.cat).icon)} ${catObj(l.cat).name}</span>
         <span class="chip"><svg class="ic"><use href="#i-check-circle"/></svg>${CONDITIONS[l.condition||'used']||'مستعمل'}</span>
         <span class="chip"><svg class="ic"><use href="#i-truck"/></svg>${l.delivery==='delivery'?'توصيل متاح':'استلام من البائع'}</span>
         <span class="chip"><svg class="ic"><use href="#i-pin"/></svg>${esc(l.city)}</span>
@@ -494,7 +495,7 @@ function openDetail(id){
         <div class="avatar">${esc((seller.name||'م').charAt(0))}</div>
         <div style="flex:1">
           <b>${esc(seller.name||'مستخدم')} ${seller.verified?'<svg class="ic" style="width:15px;color:var(--success)"><use href="#i-shield"/></svg>':''}</b>
-          <small>${sellerReviews.length ? `⭐ ${rAvg.toFixed(1)} (${sellerReviews.length} تقييم)` : 'لا توجد تقييمات'} • ${esc(seller.city||'')}</small>
+          <small>${sellerReviews.length ? `${iconHTML('star','inline-icon')} ${rAvg.toFixed(1)} (${sellerReviews.length} تقييم)` : 'لا توجد تقييمات'} • ${esc(seller.city||'')}</small>
         </div>
         <svg class="ic" style="color:var(--muted)"><use href="#i-user"/></svg>
       </div>
@@ -772,7 +773,7 @@ function toggleFav(listingId){
   if(!currentUser){ openAuth('login'); toast('سجّل الدخول أولاً'); return; }
   const idx = favs.findIndex(f=>f.userId===currentUser.id && f.listingId===listingId);
   if(idx>-1){ favs.splice(idx,1); toast('أُزيل من المفضلة'); }
-  else { favs.push({userId:currentUser.id, listingId, ts:Date.now()}); toast('أُضيف إلى المفضلة ❤️','success'); }
+  else { favs.push({userId:currentUser.id, listingId, ts:Date.now()}); toast('أُضيف إلى المفضلة','success'); }
   store.set(K.favs,favs);
   renderListings();
   updateBadges();
@@ -825,12 +826,12 @@ function openMy(){
       <div class="conv-body">
         <b>${esc(l.title)}</b>
         <p style="color:var(--primary);font-weight:800">${num(l.price)} ${CURRENCY}</p>
-        <p>👁️ ${num(l.views||0)} • ${timeAgo(l.ts)}</p>
+        <p>${iconHTML('eye','inline-icon')} ${num(l.views||0)} • ${timeAgo(l.ts)}</p>
       </div>
       <button class="close-x" data-delmy="${l.id}"><svg class="ic" style="width:17px;color:var(--danger)"><use href="#i-trash"/></svg></button>
     </div>`;
   }).join('') : `<div class="empty" style="border:none;padding:40px 10px">
-      <div class="em">📦</div><h3>لا توجد إعلانات</h3>
+      ${iconHTML('package','empty-icon')}<h3>لا توجد إعلانات</h3>
       <p>ابدأ بنشر أول إعلان لك!</p></div>`;
 
   myBox.onclick = e=>{
@@ -883,7 +884,7 @@ function renderChat(){
 
   if(!list.length){
     box.innerHTML = `<div style="margin:auto;text-align:center;color:var(--muted);font-size:13.5px">
-      <div style="font-size:38px;margin-bottom:6px">💬</div>ابدأ المحادثة</div>`;
+      ${iconHTML('message','empty-icon')}ابدأ المحادثة</div>`;
   } else {
     box.innerHTML = list.map(m=>`
       <div class="bubble ${m.from===currentUser.id?'me':'them'}">
@@ -981,13 +982,13 @@ function openNotif(){
 
   notifBox.innerHTML = mine.length ? mine.map(n=>`
     <div class="notif ${n.read?'':'unread'}">
-      <div class="notif-icon">${n.type==='msg'?'💬':n.type==='fav'?'❤️':n.type==='review'?'⭐':'🔔'}</div>
+      <div class="notif-icon">${iconHTML(n.type==='msg'?'message':n.type==='fav'?'heart':n.type==='review'?'star':'bell')}</div>
       <div class="notif-body">
         <b>${esc(n.text)}</b>
         <time>${timeAgo(n.ts)}</time>
       </div>
     </div>`).join('') : `<div class="empty" style="border:none;padding:40px 10px">
-      <div class="em">🔕</div><h3>لا توجد إشعارات</h3></div>`;
+      ${iconHTML('bell-off','empty-icon')}<h3>لا توجد إشعارات</h3></div>`;
 
   mine.forEach(n=>n.read=true);
   store.set(K.notifs,notifs);
@@ -1037,7 +1038,7 @@ function openProfile(userId){
     </div>
 
     <div class="rating-box" style="margin-top:16px">
-      <div style="font-weight:800;margin-bottom:10px">⭐ التقييمات</div>
+      <div style="font-weight:800;margin-bottom:10px">${iconHTML('star','inline-icon')} التقييمات</div>
       ${uReviews.length ? uReviews.map(r=>{
         const a = users.find(x=>x.id===r.authorId) || {name:'مستخدم'};
         return `<div class="review-item">
@@ -1053,7 +1054,7 @@ function openProfile(userId){
 
     ${canReview ? `
       <div class="rating-box" style="margin-top:16px">
-        <div style="font-weight:800;margin-bottom:10px">✍️ أضف تقييمك</div>
+        <div style="font-weight:800;margin-bottom:10px">${iconHTML('star','inline-icon')} أضف تقييمك</div>
         <div class="star-picker" id="starPicker">
           <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
         </div>
@@ -1122,7 +1123,7 @@ function showQR(id){
   const size = 280;
   canvas.width = size; canvas.height = size;
 
-  const txt = `سوق الشرجي:${l.id}`;
+  const txt = `سوق الشورجة:${l.id}`;
   ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
   ctx.fillStyle = '#0f172a';
   const cell = 10;
@@ -1156,12 +1157,12 @@ function printListing(id){
     </style></head><body>
     <h1>${esc(l.title)}</h1>
     <div class="price">${num(l.price)} ${CURRENCY}</div>
-    <div class="meta">📍 ${esc(l.city)} • 🕒 ${new Date(l.ts).toLocaleString('ar-EG')}</div>
+    <div class="meta">الموقع: ${esc(l.city)} • ${new Date(l.ts).toLocaleString('ar-EG')}</div>
     <hr/>
     <div class="desc">${esc(l.desc)}</div>
     <hr/>
     <p><b>البائع:</b> ${esc(seller.name||'—')} • <b>الهاتف:</b> ${esc(l.phone||seller.phone||'—')}</p>
-    <p style="text-align:center;color:#64748b;font-size:12px;margin-top:30px">— سوق الشرجي —</p>
+    <p style="text-align:center;color:#64748b;font-size:12px;margin-top:30px">— سوق الشورجة —</p>
     <script>setTimeout(()=>window.print(),400)<\/script>
     </body></html>`);
   w.document.close();
@@ -1515,7 +1516,7 @@ window.__reloadData = function () {
 window.renderAll = renderAll;
 
 /* =========================================================
-   سوق الشرجي — تحسينات وتفعيل الوظائف v2.0
+   سوق الشورجة — تحسينات وتفعيل الوظائف v2.0
    - تعديل/ترقية الإعلانات
    - تقارير حقيقية محفوظة
    - إشعارات الرسائل والمفضلة
@@ -1534,7 +1535,7 @@ function ensureEnhancementsUI(){
       <div class="overlay" id="ovEdit">
         <div class="modal lg">
           <div class="modal-head">
-            <h2>✏️ تعديل الإعلان</h2>
+            <h2><svg class="ic"><use href="#i-tag"/></svg> تعديل الإعلان</h2>
             <button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button>
           </div>
           <div class="modal-body">
@@ -1564,7 +1565,7 @@ function ensureEnhancementsUI(){
       <div class="overlay" id="ovInfo">
         <div class="modal">
           <div class="modal-head">
-            <h2 id="infoTitle">سوق الشرجي</h2>
+            <h2 id="infoTitle">سوق الشورجة</h2>
             <button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button>
           </div>
           <div class="modal-body" id="infoBody"></div>
@@ -1635,7 +1636,7 @@ function toggleFeaturedListing(id){
 function openInfo(type){
   ensureEnhancementsUI();
   const data = {
-    about: ['عن سوق الشرجي', '<p>سوق الشرجي منصة عراقية لعرض وشراء وبيع مختلف المنتجات والإعلانات، مع بحث وفلترة ومفضلة ومحادثات وتقييمات.</p><p class="hint">يمكنك نشر إعلان، التواصل مع البائع، حفظ الإعلانات ومتابعة إشعاراتك من نفس الموقع.</p>'],
+    about: ['عن سوق الشورجة', '<p>سوق الشورجة منصة عراقية لعرض وشراء وبيع مختلف المنتجات والإعلانات، مع بحث وفلترة ومفضلة ومحادثات وتقييمات.</p><p class="hint">يمكنك نشر إعلان، التواصل مع البائع، حفظ الإعلانات ومتابعة إشعاراتك من نفس الموقع.</p>'],
     help: ['المساعدة', '<p><b>البحث:</b> اكتب اسم المنتج أو المدينة ثم استخدم الفلاتر.</p><p><b>النشر:</b> سجّل الدخول واضغط «أضف إعلان» وأضف الصور والتفاصيل.</p><p><b>التواصل:</b> افتح الإعلان واضغط «تواصل مع البائع».</p><p><b>المفضلة:</b> اضغط رمز القلب لحفظ الإعلان والرجوع إليه لاحقاً.</p>'],
     contact: ['تواصل معنا', '<p>للتواصل مع إدارة الموقع استخدم قسم الإبلاغ داخل الإعلان للمشاكل المتعلقة بالإعلانات.</p><p class="hint">يمكن إضافة بريد أو رقم دعم رسمي لاحقاً من إعدادات المشروع.</p>'],
     terms: ['الشروط والأحكام', '<p>استخدم المنصة لنشر إعلانات حقيقية ومعلومات صحيحة، ولا تنشر محتوى مخالفاً للقوانين أو يضر بالمستخدمين.</p>'],
@@ -1701,7 +1702,7 @@ function toggleFav(listingId){
   } else {
     favs.push({userId:currentUser.id, listingId, ts:Date.now()});
     if(l && l.userId!==currentUser.id) pushNotif(l.userId,'fav',`${currentUser.name} أضاف إعلانك إلى المفضلة`,listingId);
-    toast('أُضيف إلى المفضلة ❤️','success');
+    toast('أُضيف إلى المفضلة','success');
   }
   store.set(K.favs,favs);
   renderListings();
@@ -1746,7 +1747,7 @@ function openReport(id){
       const l=listings.find(x=>x.id===id);
       if(l && l.userId!==currentUser.id) pushNotif(l.userId,'report','تم استلام بلاغ على أحد إعلاناتك',id);
       closeOverlay('#ovReport');
-      toast('تم حفظ البلاغ وإرساله للإدارة 🚩','success');
+      toast('تم حفظ البلاغ وإرساله للإدارة','success');
     };
   }
   openOverlay('#ovReport');
@@ -1762,17 +1763,17 @@ function openMy(){
     return `<div class="conv my-listing-row" data-open="${l.id}">
       <img src="${esc(img)}" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none"/>
       <div class="conv-body">
-        <b>${esc(l.title)} ${l.featured?'<span class="mini-featured">⭐ مميز</span>':''}</b>
+        <b>${esc(l.title)} ${l.featured?`<span class="mini-featured">${iconHTML('star','inline-icon')} مميز</span>`:''}</b>
         <p style="color:var(--primary);font-weight:800">${num(l.price)} ${CURRENCY}</p>
-        <p>👁️ ${num(l.views||0)} • ${timeAgo(l.ts)}</p>
+        <p>${iconHTML('eye','inline-icon')} ${num(l.views||0)} • ${timeAgo(l.ts)}</p>
       </div>
       <div class="listing-tools" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" data-editmy="${l.id}" title="تعديل">✏️</button>
-        <button class="btn btn-ghost btn-sm" data-boostmy="${l.id}" title="تمييز">${l.featured?'⭐':'☆'}</button>
+        <button class="btn btn-ghost btn-sm" data-editmy="${l.id}" title="تعديل"><svg class="ic"><use href="#i-tag"/></svg></button>
+        <button class="btn btn-ghost btn-sm" data-boostmy="${l.id}" title="تمييز">${iconHTML('star')}</button>
         <button class="close-x" data-delmy="${l.id}" title="حذف"><svg class="ic" style="width:17px;color:var(--danger)"><use href="#i-trash"/></svg></button>
       </div>
     </div>`;
-  }).join(''):`<div class="empty" style="border:none;padding:40px 10px"><div class="em">📦</div><h3>لا توجد إعلانات</h3><p>ابدأ بنشر أول إعلان لك!</p></div>`;
+  }).join(''):`<div class="empty" style="border:none;padding:40px 10px">${iconHTML('package','empty-icon')}<h3>لا توجد إعلانات</h3><p>ابدأ بنشر أول إعلان لك!</p></div>`;
   myBox.onclick=e=>{
     const edit=e.target.closest('[data-editmy]');
     if(edit){e.stopPropagation();openEditListing(edit.dataset.editmy);return;}
@@ -1862,7 +1863,7 @@ async function installOrExplain(){
     __deferredInstallPrompt=null;
     return;
   }
-  toast('من المتصفح: افتح القائمة ثم اختر «إضافة إلى الشاشة الرئيسية» 📱');
+  toast('من المتصفح: افتح القائمة ثم اختر «إضافة إلى الشاشة الرئيسية»');
 }
 
 /* توصيل الأحداث الإضافية بعد تحميل الصفحة */

@@ -1,4 +1,4 @@
-# سوق الشرجي — Pella Express
+# سوق الشورجة — Pella Express
 
 هذه النسخة مجهزة للرفع المباشر على Pella ضمن نوع **Express.js**.
 

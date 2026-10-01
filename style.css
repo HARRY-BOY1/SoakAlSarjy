@@ -1,5 +1,5 @@
 /* =========================================================
-   سوق الشرجي — الأنماط الرئيسية
+   سوق الشورجة — الأنماط الرئيسية
    تصميم احترافي مستوحى من مريدي والراقي
    ========================================================= */
 
@@ -57,6 +57,8 @@ a{color:inherit;text-decoration:none}
 [data-theme="dark"] ::-webkit-scrollbar-thumb{background:#334155}
 
 .ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ui-icon{width:20px;height:20px;display:inline-block;object-fit:contain;flex:none;vertical-align:middle;filter:var(--icon-filter,none)}
+.inline-icon{width:16px;height:16px;margin-inline-start:3px}
 .ic-sm{width:16px;height:16px}
 .container{max-width:1320px;margin:0 auto;padding:0 16px}
 .flex-row{display:flex;gap:9px}
@@ -94,6 +96,7 @@ a{color:inherit;text-decoration:none}
   background:linear-gradient(45deg,transparent,rgba(251,191,36,.4),transparent);
   animation:shine 3s infinite;
 }
+.logo-mark img{width:28px;height:28px;filter:brightness(0) invert(1);position:relative;z-index:1}
 @keyframes shine{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .logo-text{display:flex;flex-direction:column;line-height:1.1}
 .logo-title{font-size:19px;font-weight:900;color:var(--text);letter-spacing:-.3px}
@@ -234,13 +237,14 @@ a{color:inherit;text-decoration:none}
   padding:14px 16px;background:var(--navy);color:#fff;font-weight:800;font-size:15px;
   display:flex;align-items:center;justify-content:space-between;
 }
+.side-cats-head .ui-icon{filter:brightness(0) invert(1);margin-inline-end:7px}
 .side-cats-body{padding:6px;max-height:340px;overflow-y:auto}
 .side-cat-item{
   display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;
   cursor:pointer;transition:.15s;font-weight:600;font-size:14px;
 }
 .side-cat-item:hover{background:var(--primary-50);color:var(--primary)}
-.side-cat-item .em{font-size:18px}
+.side-cat-item .ui-icon{width:19px;height:19px;color:var(--primary)}
 
 /* Slider */
 .hero-slider{
@@ -261,10 +265,11 @@ a{color:inherit;text-decoration:none}
 .slide-3{background:linear-gradient(120deg,#064e3b 0%,#059669 70%)}
 .slide-content{position:relative;z-index:2;max-width:440px}
 .slide-badge{
-  display:inline-block;background:rgba(251,191,36,.9);color:var(--navy);
+  display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,.9);color:var(--navy);
   padding:5px 14px;border-radius:20px;font-size:12.5px;font-weight:800;
   margin-bottom:14px;
 }
+.slide-badge .ui-icon{width:16px;height:16px}
 .slide h2{font-size:30px;font-weight:900;line-height:1.25;margin-bottom:10px}
 .slide p{font-size:15px;opacity:.92;margin-bottom:22px}
 
@@ -299,10 +304,11 @@ a{color:inherit;text-decoration:none}
 }
 .side-app-text{position:relative;z-index:2}
 .side-app-badge{
-  display:inline-block;background:rgba(255,255,255,.2);padding:4px 11px;
+  display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);padding:4px 11px;
   border-radius:20px;font-size:11.5px;font-weight:800;margin-bottom:12px;
   backdrop-filter:blur(6px);
 }
+.side-app-badge .ui-icon{width:15px;height:15px;filter:brightness(0) invert(1)}
 .side-banner h3{font-size:18px;font-weight:900;line-height:1.35;margin-bottom:6px}
 .side-banner p{font-size:13.5px;opacity:.9;margin-bottom:16px}
 .app-buttons{display:flex;flex-direction:column;gap:8px}
@@ -347,6 +353,7 @@ a{color:inherit;text-decoration:none}
   width:52px;height:52px;border-radius:50%;background:var(--primary-50);
   display:grid;place-items:center;font-size:26px;transition:.2s;
 }
+.qcat-em .ui-icon{width:27px;height:27px;color:var(--primary)}
 .qcat:hover .qcat-em{background:var(--gold);transform:scale(1.1)}
 .qcat b{font-size:12.5px;font-weight:700;color:var(--text)}
 
@@ -427,7 +434,7 @@ a{color:inherit;text-decoration:none}
 }
 .filter-cat-item:hover{background:var(--primary-50);color:var(--primary)}
 .filter-cat-item.active{background:var(--primary);color:#fff}
-.filter-cat-item .em{font-size:16px}
+.filter-cat-item .ui-icon{width:18px;height:18px}
 
 /* ============ PRODUCTS AREA ============ */
 .products-header{
@@ -473,6 +480,7 @@ a{color:inherit;text-decoration:none}
   font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:20px;
   box-shadow:0 4px 12px -3px rgba(249,115,22,.9);
 }
+.tag .ui-icon{width:14px;height:14px}
 .tag.discount{background:var(--danger)}
 .verified-tag{
   position:absolute;bottom:10px;inset-inline-start:10px;background:rgba(22,163,74,.95);
@@ -502,6 +510,7 @@ a{color:inherit;text-decoration:none}
   border:2px dashed var(--border);border-radius:14px;
 }
 .empty .em{font-size:56px;margin-bottom:12px}
+.empty-icon{width:46px;height:46px;color:var(--primary);margin:0 auto 12px}
 .empty h3{font-size:19px;margin-bottom:7px}
 .empty p{color:var(--muted);font-size:14.5px}
 
@@ -573,7 +582,8 @@ a{color:inherit;text-decoration:none}
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:18px 22px;border-bottom:1px solid var(--border);flex:none;
 }
-.modal-head h2{font-size:18.5px;font-weight:800}
+.modal-head h2{font-size:18.5px;font-weight:800;display:flex;align-items:center;gap:8px}
+.modal-head h2 .ui-icon{width:21px;height:21px;color:var(--primary)}
 .modal-body{padding:22px;overflow-y:auto;flex:1}
 .modal-foot{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;flex:none}
 .close-x{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--muted);transition:.2s}
@@ -704,6 +714,7 @@ textarea.inp{resize:vertical;min-height:110px;line-height:1.7}
   width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;
   background:var(--navy);color:var(--gold);font-size:18px;
 }
+.notif-icon .ui-icon{width:20px;height:20px;filter:brightness(0) invert(1)}
 .notif-body b{display:block;font-size:14px}
 .notif-body p{font-size:13px;color:var(--muted);line-height:1.5}
 .notif-body time{font-size:11px;color:var(--muted)}
@@ -793,6 +804,7 @@ textarea.inp{resize:vertical;min-height:110px;line-height:1.7}
 .listing-tools{display:flex;align-items:center;gap:5px;flex:none}
 .my-listing-row{align-items:center}
 .mini-featured{display:inline-flex;align-items:center;padding:2px 6px;border-radius:20px;background:rgba(251,191,36,.16);color:#b45309;font-size:10px;margin-inline-start:4px}
+.mini-featured .ui-icon{width:12px;height:12px}
 #ovInfo code{background:var(--bg);padding:2px 5px;border-radius:5px}
 
 

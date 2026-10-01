@@ -2,7 +2,7 @@
   "name": "al-sharji-market",
   "version": "2.1.0",
   "private": true,
-  "description": "سوق الشرجي - سوق إلكتروني عراقي",
+  "description": "سوق الشورجة - سوق إلكتروني عراقي",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
