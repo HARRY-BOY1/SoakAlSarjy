@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#0f172a"/>
+<meta name="description" content="سوق الشرجي — سوق إلكتروني لبيع وشراء أي شيء"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>سوق الشرجي | سوق إلكتروني لبيع وشراء أي شيء</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ============ SVG ICONS ============ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3 6.5 7 .9-5 4.9 1.2 7L12 18l-6.2 3.3 1.2-7-5-4.9 7-.9z"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 3.9M15.4 6.6 8.6 10.5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v3M14 21h3M21 21h.01"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="m23 6-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></symbol>
+  <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chev-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+  <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m22 4-10 10-3-3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z"/><path d="M17.5 6.5h.01"/></symbol>
+  <symbol id="i-twitter" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.1 1.6A4.5 4.5 0 0 0 12 8v1A10.7 10.7 0 0 1 3 4s-4 9 5 13a11.6 11.6 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.1-1A7.7 7.7 0 0 0 23 3z"/></symbol>
+  <symbol id="i-youtube" viewBox="0 0 24 24"><path d="M22.5 6.4a2.8 2.8 0 0 0-2-2C18.9 4 12 4 12 4s-6.9 0-8.5.4a2.8 2.8 0 0 0-2 2A29.4 29.4 0 0 0 1 12a29.4 29.4 0 0 0 .5 5.6 2.8 2.8 0 0 0 2 2C5.1 20 12 20 12 20s6.9 0 8.5-.4a2.8 2.8 0 0 0 2-2A29.4 29.4 0 0 0 23 12a29.4 29.4 0 0 0-.5-5.6z"/><path d="m10 15 5-3-5-3z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-google-play" viewBox="0 0 24 24"><path d="M3 20.5V3.5a1.5 1.5 0 0 1 2.3-1.3l14.5 8.5a1.5 1.5 0 0 1 0 2.6L5.3 21.8A1.5 1.5 0 0 1 3 20.5z"/></symbol>
+  <symbol id="i-apple" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></symbol>
+</svg>
+
+<!-- ============ TOP BAR ============ -->
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="topbar-links">
+      <a href="#">عن السوق</a>
+      <span>|</span>
+      <a href="#">المساعدة</a>
+      <span>|</span>
+      <a href="#">تواصل معنا</a>
+    </div>
+    <div class="topbar-actions">
+      <button id="langBtn" class="topbar-btn">
+        <svg class="ic" style="width:15px"><use href="#i-globe"/></svg>
+        <span id="langCode">AR</span>
+      </button>
+      <button id="themeBtn" class="topbar-btn" title="الوضع الليلي">
+        <svg class="ic" style="width:15px"><use href="#i-moon" id="themeIcon"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN HEADER ============ -->
+<header class="header">
+  <div class="container header-inner">
+
+    <a href="#" class="logo" id="logoBtn">
+      <div class="logo-mark">ش</div>
+      <div class="logo-text">
+        <span class="logo-title">سوق الشرجي</span>
+        <span class="logo-sub">Al-Sharji Market</span>
+      </div>
+    </a>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <input id="searchInput" type="search" placeholder="ابحث عن منتجات، ماركات، أقسام..."/>
+        <div class="search-suggest" id="searchSuggest"></div>
+        <button class="search-btn" id="searchBtn">
+          <svg class="ic"><use href="#i-search"/></svg>
+        </button>
+      </div>
+      <div class="search-hot">
+        <span>الأكثر بحثاً:</span>
+        <a href="#" data-hot="آيفون">آيفون</a>
+        <a href="#" data-hot="سامسونج">سامسونج</a>
+        <a href="#" data-hot="لابتوب">لابتوب</a>
+        <a href="#" data-hot="سيارة">سيارة</a>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="action-btn" id="favBtn">
+        <svg class="ic"><use href="#i-heart"/></svg>
+        <span class="action-label">المفضلة</span>
+        <span class="badge" id="favCount" data-n="0"></span>
+      </button>
+
+      <button class="action-btn" id="msgBtn">
+        <svg class="ic"><use href="#i-mail"/></svg>
+        <span class="action-label">الرسائل</span>
+        <span class="badge" id="msgCount" data-n="0"></span>
+      </button>
+
+      <button class="action-btn" id="notifBtn">
+        <svg class="ic"><use href="#i-bell"/></svg>
+        <span class="action-label">الإشعارات</span>
+        <span class="badge" id="notifCount" data-n="0"></span>
+      </button>
+
+      <button class="btn btn-accent" id="addBtn">
+        <svg class="ic"><use href="#i-plus"/></svg>
+        <span>أضف إعلان</span>
+      </button>
+
+      <div id="authArea"></div>
+    </div>
+  </div>
+
+  <!-- NAV BAR -->
+  <nav class="navbar">
+    <div class="container navbar-inner">
+      <button class="nav-all-cats" id="toggleCats">
+        <svg class="ic"><use href="#i-menu"/></svg>
+        جميع الأقسام
+        <svg class="ic ic-sm"><use href="#i-chev-down"/></svg>
+      </button>
+      <a href="#" class="nav-link active">الرئيسية</a>
+      <a href="#" class="nav-link">الأكثر مبيعاً</a>
+      <a href="#" class="nav-link">عروض اليوم</a>
+      <a href="#" class="nav-link">المتاجر الرسمية</a>
+      <a href="#" class="nav-link">خدماتنا</a>
+    </div>
+  </nav>
+</header>
+
+<main class="container">
+
+  <!-- ============ HERO LAYOUT ============ -->
+  <div class="hero-layout">
+
+    <!-- CATEGORIES SIDEBAR -->
+    <aside class="side-cats" id="sideCats">
+      <div class="side-cats-head">📋 جميع الأقسام</div>
+      <div class="side-cats-body" id="sideCatsBody"></div>
+    </aside>
+
+    <!-- HERO SLIDER -->
+    <div class="hero-slider">
+      <div class="slider-track" id="sliderTrack">
+        <div class="slide slide-1">
+          <div class="slide-content">
+            <span class="slide-badge">🔥 عروض رمضان</span>
+            <h2>أحدث الأجهزة الإلكترونية</h2>
+            <p>كل ما تحتاجه من إلكترونيات في مكان واحد — بأفضل الأسعار</p>
+            <button class="btn btn-light" data-slide-go="electronics">تسوق الآن ←</button>
+          </div>
+        </div>
+        <div class="slide slide-2">
+          <div class="slide-content">
+            <span class="slide-badge">⭐ جديد</span>
+            <h2>سيارات بأفضل الأسعار</h2>
+            <p>تصفح مئات السيارات المعروضة من بائعين موثوقين</p>
+            <button class="btn btn-light" data-slide-go="cars">تصفح السيارات ←</button>
+          </div>
+        </div>
+        <div class="slide slide-3">
+          <div class="slide-content">
+            <span class="slide-badge">🎁 عرض خاص</span>
+            <h2>عقارات في كل المدن</h2>
+            <p>شقق، بيوت، أراضي — بأفضل الأسعار وأكثر المواقع</p>
+            <button class="btn btn-light" data-slide-go="realestate">تصفح العقارات ←</button>
+          </div>
+        </div>
+      </div>
+      <button class="slider-nav prev" id="sliderPrev"><svg class="ic"><use href="#i-chev-right"/></svg></button>
+      <button class="slider-nav next" id="sliderNext"><svg class="ic"><use href="#i-chev-left"/></svg></button>
+      <div class="slider-dots" id="sliderDots"></div>
+    </div>
+
+    <!-- SIDE BANNER -->
+    <div class="side-banner">
+      <div class="side-app-box">
+        <div class="side-app-text">
+          <span class="side-app-badge">⭐ حمّل التطبيق</span>
+          <h3>سوق الشرجي على موبايلك</h3>
+          <p>تسوّق بسهولة وأمان من أي مكان</p>
+          <div class="app-buttons">
+            <button class="app-btn"><svg class="ic"><use href="#i-google-play"/></svg> Google Play</button>
+            <button class="app-btn"><svg class="ic"><use href="#i-apple"/></svg> App Store</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FEATURES STRIP ============ -->
+  <div class="features-strip">
+    <div class="feature">
+      <div class="feature-icon"><svg class="ic"><use href="#i-truck"/></svg></div>
+      <div><b>توصيل سريع</b><small>لجميع مدن العراق</small></div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg class="ic"><use href="#i-shield"/></svg></div>
+      <div><b>منتجات أصلية</b><small>من بائعين موثوقين</small></div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg class="ic"><use href="#i-lock"/></svg></div>
+      <div><b>دفع آمن</b><small>حماية كاملة للمشتري</small></div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg class="ic"><use href="#i-headphones"/></svg></div>
+      <div><b>دعم 24/7</b><small>نحن دائماً معك</small></div>
+    </div>
+  </div>
+
+  <!-- ============ CATEGORY QUICK ACCESS ============ -->
+  <section class="section quick-cats">
+    <div class="quick-cats-grid" id="quickCats"></div>
+  </section>
+
+  <!-- ============ PROMO BANNERS ============ -->
+  <section class="section promo-grid">
+    <div class="promo-card promo-blue">
+      <div class="promo-card-text">
+        <span class="promo-mini">عرض خاص</span>
+        <h3>خصومات تصل إلى 50%</h3>
+        <p>على الإلكترونيات والموبايلات</p>
+        <button class="btn btn-light btn-sm">تسوق الآن</button>
+      </div>
+    </div>
+    <div class="promo-card promo-gold">
+      <div class="promo-card-text">
+        <span class="promo-mini">جديدنا</span>
+        <h3>أثاث المنزل</h3>
+        <p>جودة عالية وأسعار مميزة</p>
+        <button class="btn btn-light btn-sm">تصفح الآن</button>
+      </div>
+    </div>
+    <div class="promo-card promo-dark">
+      <div class="promo-card-text">
+        <span class="promo-mini">الأكثر طلباً</span>
+        <h3>أزياء عصرية</h3>
+        <p>لجميع الأذواق والمناسبات</p>
+        <button class="btn btn-light btn-sm">اكتشف المزيد</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRENDING SECTION ============ -->
+  <section class="section" id="trendSection">
+    <div class="section-head">
+      <h2><svg class="ic"><use href="#i-trend"/></svg> الأكثر رواجاً الآن</h2>
+      <button class="link-btn" data-more="trend">عرض الكل ←</button>
+    </div>
+    <div class="trend-strip" id="trendStrip"></div>
+  </section>
+
+  <!-- ============ RECENTLY VIEWED ============ -->
+  <section class="section" id="recentSection" style="display:none">
+    <div class="section-head">
+      <h2><svg class="ic"><use href="#i-history"/></svg> شاهدتها مؤخراً</h2>
+      <button class="link-btn" id="clearRecent">مسح</button>
+    </div>
+    <div class="trend-strip" id="recentStrip"></div>
+  </section>
+
+  <!-- ============ MAIN CONTENT LAYOUT ============ -->
+  <div class="content-layout">
+
+    <!-- SIDEBAR FILTERS -->
+    <aside class="filters-sidebar">
+      <div class="filter-box">
+        <div class="filter-head">الأقسام</div>
+        <div class="filter-body" id="filterCats"></div>
+      </div>
+
+      <div class="filter-box">
+        <div class="filter-head">السعر</div>
+        <div class="filter-body">
+          <div class="price-inputs">
+            <input type="number" id="fMin" placeholder="من" min="0"/>
+            <span>—</span>
+            <input type="number" id="fMax" placeholder="إلى" min="0"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-box">
+        <div class="filter-head">المدينة</div>
+        <div class="filter-body">
+          <select id="fCity" class="inp-select"></select>
+        </div>
+      </div>
+
+      <div class="filter-box">
+        <div class="filter-head">الترتيب</div>
+        <div class="filter-body">
+          <select id="fSort" class="inp-select">
+            <option value="new">الأحدث أولاً</option>
+            <option value="old">الأقدم أولاً</option>
+            <option value="cheap">الأرخص سعراً</option>
+            <option value="expensive">الأغلى سعراً</option>
+            <option value="views">الأكثر مشاهدة</option>
+            <option value="rated">الأعلى تقييماً</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost btn-block" id="clearFilters">
+        <svg class="ic"><use href="#i-close"/></svg> مسح الفلاتر
+      </button>
+    </aside>
+
+    <!-- PRODUCTS AREA -->
+    <div class="products-area">
+      <div class="products-header">
+        <h2 class="products-title" id="tbTitle">
+          <svg class="ic"><use href="#i-tag"/></svg>
+          أحدث الإعلانات
+        </h2>
+        <div class="products-count" id="tbCount">0 إعلان</div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+
+  <!-- ============ MOST SEARCHED ============ -->
+  <section class="section">
+    <div class="section-head">
+      <h2>🔍 الأكثر بحثاً اليوم</h2>
+    </div>
+    <div class="search-tags">
+      <a href="#" data-hot="آيفون">1. آيفون 15</a>
+      <a href="#" data-hot="سامسونج">2. سامسونج</a>
+      <a href="#" data-hot="لابتوب">3. لابتوب Dell</a>
+      <a href="#" data-hot="سيارة">4. تويوتا</a>
+      <a href="#" data-hot="ساعة">5. ساعات ذكية</a>
+      <a href="#" data-hot="شقة">6. شقة للبيع</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-col">
+        <div class="footer-logo">
+          <div class="logo-mark">ش</div>
+          <div>
+            <b>سوق الشرجي</b>
+            <small>Al-Sharji Market</small>
+          </div>
+        </div>
+        <p class="footer-desc">سوق إلكتروني عراقي لبيع وشراء أي شيء — انشر إعلانك مجاناً وتواصل مع البائعين والمشترين بأمان.</p>
+        <div class="footer-social">
+          <a href="#"><svg class="ic"><use href="#i-facebook"/></svg></a>
+          <a href="#"><svg class="ic"><use href="#i-instagram"/></svg></a>
+          <a href="#"><svg class="ic"><use href="#i-twitter"/></svg></a>
+          <a href="#"><svg class="ic"><use href="#i-youtube"/></svg></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>عن السوق</h4>
+        <a href="#">من نحن</a>
+        <a href="#">كيف نعمل</a>
+        <a href="#">الوظائف</a>
+        <a href="#">المدونة</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>خدمة العملاء</h4>
+        <a href="#">المساعدة</a>
+        <a href="#">الشروط والأحكام</a>
+        <a href="#">سياسة الخصوصية</a>
+        <a href="#">تواصل معنا</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>حسابي</h4>
+        <a href="#" id="footerLogin">تسجيل الدخول</a>
+        <a href="#" id="footerFav">المفضلة</a>
+        <a href="#" id="footerMy">إعلاناتي</a>
+        <a href="#" id="footerMsgs">الرسائل</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>وسائل الدفع</h4>
+        <div class="payment-methods">
+          <span class="pay-badge">VISA</span>
+          <span class="pay-badge">MasterCard</span>
+          <span class="pay-badge">ZainCash</span>
+          <span class="pay-badge">PayPal</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© <span id="year"></span> سوق الشرجي — جميع الحقوق محفوظة.</p>
+      <p>صُنع بـ ❤️ في العراق</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ OVERLAYS ============ -->
+<div class="overlay" id="ovAuth">
+  <div class="modal sm">
+    <div class="modal-head">
+      <h2 id="authTitle">تسجيل الدخول</h2>
+      <button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <button class="tab active" data-tab="login">دخول</button>
+        <button class="tab" data-tab="reg">حساب جديد</button>
+      </div>
+      <form id="formLogin">
+        <div class="form-row"><label>رقم الهاتف</label><input class="inp" name="phone" type="tel" placeholder="07XXXXXXXXX" required/></div>
+        <div class="form-row"><label>كلمة المرور</label><input class="inp" name="pass" type="password" placeholder="••••••••" required/></div>
+        <button class="btn btn-primary btn-block" type="submit">دخول</button>
+      </form>
+      <form id="formReg" style="display:none">
+        <div class="form-row"><label>الاسم الكامل <i>*</i></label><input class="inp" name="name" placeholder="مثال: أحمد محمد" required/></div>
+        <div class="form-row"><label>رقم الهاتف <i>*</i></label><input class="inp" name="phone" type="tel" placeholder="07XXXXXXXXX" required/></div>
+        <div class="form-row"><label>المدينة</label><select class="inp" name="city" id="regCity"></select></div>
+        <div class="form-row"><label>كلمة المرور <i>*</i></label><input class="inp" name="pass" type="password" placeholder="6 أحرف على الأقل" minlength="6" required/></div>
+        <button class="btn btn-primary btn-block" type="submit">إنشاء الحساب</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovAdd">
+  <div class="modal lg">
+    <div class="modal-head">
+      <h2>➕ نشر إعلان جديد</h2>
+      <button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <form id="formAdd">
+        <div class="form-row"><label>عنوان الإعلان <i>*</i></label><input class="inp" name="title" placeholder="مثال: آيفون 15 برو ماكس 256GB" maxlength="90" required/></div>
+        <div class="form-2">
+          <div class="form-row"><label>القسم <i>*</i></label><select class="inp" name="cat" id="addCat" required></select></div>
+          <div class="form-row"><label>المدينة <i>*</i></label><select class="inp" name="city" id="addCity" required></select></div>
+        </div>
+        <div class="form-2">
+          <div class="form-row"><label>السعر <i>*</i></label><input class="inp" name="price" type="number" min="0" placeholder="0" required/></div>
+          <div class="form-row"><label>رقم التواصل</label><input class="inp" name="phone" type="tel" placeholder="اتركه فارغاً لاستخدام رقم حسابك"/></div>
+        </div>
+        <div class="form-row"><label>الوصف <i>*</i></label><textarea class="inp" name="desc" placeholder="اكتب تفاصيل الغرض..." maxlength="1500" required></textarea></div>
+        <div class="form-row">
+          <label>الصور</label>
+          <div class="uploader" id="uploader">
+            <svg class="ic"><use href="#i-camera"/></svg>
+            <b>اضغط لإضافة صور</b>
+            <span>حتى 5 صور — JPG / PNG / WEBP</span>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" multiple hidden/>
+          <div class="thumbs" id="thumbs"></div>
+        </div>
+        <div class="form-row">
+          <label>أو ألصق رابط صورة</label>
+          <div class="flex-row">
+            <input class="inp" id="imgUrl" placeholder="https://..."/>
+            <button class="btn btn-ghost" type="button" id="addUrlBtn">إضافة</button>
+          </div>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" name="featured"/>
+          <span>ترقية الإعلان (يظهر في المقدمة) ⭐</span>
+        </label>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary btn-block" id="saveListingBtn">نشر الإعلان</button>
+      <button class="btn btn-ghost" data-close>إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovDetail">
+  <div class="modal lg">
+    <div class="detail" id="detailBox"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ovFav">
+  <div class="modal">
+    <div class="modal-head"><h2>❤️ المفضلة</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body" id="favBox"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ovMy">
+  <div class="modal">
+    <div class="modal-head"><h2>📦 إعلاناتي</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body" id="myBox"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ovInbox">
+  <div class="modal">
+    <div class="modal-head"><h2>✉️ الرسائل</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body" id="inboxBox"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ovNotif">
+  <div class="modal">
+    <div class="modal-head"><h2>🔔 الإشعارات</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body" id="notifBox"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ovChat">
+  <div class="modal sm" style="max-width:480px">
+    <div class="modal-head"><h2 id="chatName">المحادثة</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="chat-ctx" id="chatCtx"></div>
+    <div class="chat-body"><div class="chat-msgs" id="chatMsgs"></div></div>
+    <div class="chat-input">
+      <input class="inp" id="chatInput" placeholder="اكتب رسالتك..."/>
+      <button id="chatSend"><svg class="ic"><use href="#i-send"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovProfile">
+  <div class="modal">
+    <div class="modal-head"><h2>👤 الملف الشخصي</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body" id="profileBox"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ovQR">
+  <div class="modal sm">
+    <div class="modal-head"><h2>📱 رمز QR</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body" style="text-align:center">
+      <canvas id="qrCanvas" style="max-width:100%;border-radius:12px"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovReport">
+  <div class="modal sm">
+    <div class="modal-head"><h2>🚩 الإبلاغ عن إعلان</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body">
+      <div class="form-row"><label>سبب الإبلاغ</label>
+        <select class="inp" id="reportReason">
+          <option value="spam">إعلان مزعج / تكرار</option>
+          <option value="fake">إعلان وهمي أو احتيال</option>
+          <option value="wrongcat">القسم غير صحيح</option>
+          <option value="offensive">محتوى مسيء</option>
+          <option value="other">سبب آخر</option>
+        </select>
+      </div>
+      <div class="form-row"><label>تفاصيل إضافية</label><textarea class="inp" id="reportNote" rows="3"></textarea></div>
+      <button class="btn btn-danger btn-block" id="sendReport">إرسال الإبلاغ</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="script.js"></script>
+<script src="sync.js"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
+</body>
+</html>
