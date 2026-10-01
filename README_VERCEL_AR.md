@@ -1,5 +1,23 @@
 # نشر سوق الشورجة على Vercel
 
+## التحديث الآمن الجديد
+
+لوحة المدير وتغيير بيانات الحساب الحساسة تحتاج تشغيل `server.js` على Node/Pella أو VPS؛ GitHub Pages وVercel كاستضافة ملفات ثابتة يعرضان الواجهة فقط. لا تضع كلمة مرور المدير أو hash داخل GitHub. اضبط الأسرار في بيئة الاستضافة:
+
+```bash
+export ADMIN_PHONE=07748820203
+export ADMIN_PASSWORD_HASH='scrypt$...'
+npm start
+```
+
+ولّد hash محلياً من دون حفظ كلمة المرور في المشروع:
+
+```bash
+printf '%s' 'كلمة المرور' | node -e "const crypto=require('crypto');const p=require('fs').readFileSync(0,'utf8').trim();const s=crypto.randomBytes(16).toString('hex');console.log('scrypt$'+s+'$'+crypto.scryptSync(p,s,64).toString('hex'))"
+```
+
+التحديث يضيف جلسات خادمية، إدارة الإعلانات والمحتوى، ملفاً شخصياً وإعدادات أمان، ثيمات متعددة، تخطيط شبكة/قائمة، معرض صور وروابط فيديو ورابط تواصل للإعلان، وقناة Telegram الرسمية.
+
 ## الطريقة الصحيحة
 
 1. فك ضغط الملف أولاً.

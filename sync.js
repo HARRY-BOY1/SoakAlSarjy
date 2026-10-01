@@ -6,6 +6,11 @@
   const cfg = window.SUPABASE_CONFIG;
   const sdk = window.supabase;
 
+  if (window.__SERVER_API__) {
+    console.info('Secure Express API active; legacy direct Supabase sync is disabled.');
+    return;
+  }
+
   const TABLES = {
     users: 'marketplace_users',
     listings: 'marketplace_listings',

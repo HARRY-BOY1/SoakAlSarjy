@@ -8,7 +8,7 @@ const CURRENCY = 'د.ع';
 const K = {
   users:'sq_users', listings:'sq_listings', favs:'sq_favs',
   msgs:'sq_msgs', notifs:'sq_notifs', reviews:'sq_reviews',
-  recent:'sq_recent', session:'sq_session', theme:'sq_theme', lang:'sq_lang'
+  recent:'sq_recent', session:'sq_session', theme:'sq_theme', lang:'sq_lang', prefs:'sq_ui_prefs_v1'
 };
 
 const CATEGORIES = [
@@ -41,6 +41,16 @@ const esc = (s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 const num = n=>Number(n||0).toLocaleString('en-US');
 const iconHTML = (name, className='ui-icon') => `<img class="${className}" src="assets/icons/${esc(name)}.svg" alt="" aria-hidden="true"/>`;
 const catObj = id=>CATEGORIES.find(c=>c.id===id)||{name:'أخرى',nameEn:'Other',icon:'package'};
+const safeHttpUrl = value=>{ try{ const u=new URL(String(value||'').trim()); return ['http:','https:'].includes(u.protocol)?u.toString():''; }catch(_){ return ''; } };
+const API_AVAILABLE = /^https?:$/.test(location.protocol);
+window.__SERVER_API__ = API_AVAILABLE;
+async function api(path, options={}){
+  if(!API_AVAILABLE) throw new Error('api_unavailable');
+  const res = await fetch(path,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
+  let data={}; try{ data=await res.json(); }catch(_){ }
+  if(!res.ok){ const err=new Error(data.error||`HTTP_${res.status}`); err.status=res.status; throw err; }
+  return data;
+}
 
 function timeAgo(ts){
   const d = Math.floor((Date.now()-ts)/1000);
@@ -104,6 +114,8 @@ let reviews   = store.get(K.reviews,[]);
 let recent    = store.get(K.recent,[]);
 let currentUser = null;
 let lang = store.get(K.lang,'ar');
+let adminSession = false;
+let uiPrefs = {version:1,theme:store.get(K.theme,'light'),density:'comfortable',layout:'grid',reducedMotion:false};
 
 let filters = { q:'', cat:'all', city:'all', min:'', max:'', condition:'all', type:'all', sort:'new' };
 let pendingImages = [];
@@ -144,19 +156,48 @@ function toggleLang(){
   renderAll();
 }
 
-/* ============ 7) الثيم ============ */
-function applyTheme(){
-  const t = store.get(K.theme,'light');
-  document.documentElement.setAttribute('data-theme',t);
-  const icon = $('#themeIcon');
-  if(icon) icon.setAttribute('href', t==='dark' ? '#i-sun' : '#i-moon');
+/* ============ 7) الثيم وتخصيص الواجهة ============ */
+const PREF_DEFAULTS = {version:1,theme:'light',density:'comfortable',layout:'grid',reducedMotion:false};
+function readPrefs(){
+  const saved = store.get(K.prefs,{});
+  const legacy = store.get(K.theme,null);
+  const allowedTheme = ['light','midnight','sand','emerald','contrast','system'];
+  const allowedDensity = ['compact','comfortable','spacious'];
+  const allowedLayout = ['grid','list'];
+  return {...PREF_DEFAULTS,...saved,
+    theme:allowedTheme.includes(saved.theme)?saved.theme:(legacy==='dark'?'midnight':PREF_DEFAULTS.theme),
+    density:allowedDensity.includes(saved.density)?saved.density:PREF_DEFAULTS.density,
+    layout:allowedLayout.includes(saved.layout)?saved.layout:PREF_DEFAULTS.layout,
+    reducedMotion:!!saved.reducedMotion};
 }
-function toggleTheme(){
-  const t = document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme',t);
-  store.set(K.theme,t);
-  const icon = $('#themeIcon');
-  if(icon) icon.setAttribute('href', t==='dark' ? '#i-sun' : '#i-moon');
+function effectiveTheme(theme){
+  if(theme!=='system') return theme;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'midnight' : 'light';
+}
+function applyPrefs(next=uiPrefs){
+  uiPrefs = {...PREF_DEFAULTS,...next};
+  const root = document.documentElement;
+  root.setAttribute('data-theme',effectiveTheme(uiPrefs.theme));
+  root.setAttribute('data-density',uiPrefs.density);
+  root.setAttribute('data-layout',uiPrefs.layout);
+  root.setAttribute('data-motion',uiPrefs.reducedMotion?'reduced':'system');
+  const icon = $('#themeIcon'); if(icon) icon.setAttribute('href',effectiveTheme(uiPrefs.theme)==='midnight'?'#i-sun':'#i-moon');
+  const themeBtn = $('#themeBtn'); if(themeBtn) themeBtn.setAttribute('aria-pressed',String(effectiveTheme(uiPrefs.theme)==='midnight'));
+  store.set(K.prefs,uiPrefs); store.set(K.theme,uiPrefs.theme);
+  syncPreferenceControls();
+}
+function applyTheme(){ applyPrefs(readPrefs()); }
+function toggleTheme(){ applyPrefs({...uiPrefs,theme:effectiveTheme(uiPrefs.theme)==='midnight'?'light':'midnight'}); }
+function syncPreferenceControls(){
+  const form = $('#formPreferences'); if(!form) return;
+  ['theme','density','layout'].forEach(name=>{ const el=form.querySelector(`[name="${name}"][value="${uiPrefs[name]}"]`); if(el) el.checked=true; });
+  const motion=form.querySelector('[name="reducedMotion"]'); if(motion) motion.checked=!!uiPrefs.reducedMotion;
+}
+function openPreferences(){ syncPreferenceControls(); openOverlay('#ovPreferences'); }
+function setupPreferences(){
+  const form=$('#formPreferences'); if(!form) return;
+  form.onsubmit=e=>{ e.preventDefault(); const f=new FormData(form); applyPrefs({theme:String(f.get('theme')||'light'),density:String(f.get('density')||'comfortable'),layout:String(f.get('layout')||'grid'),reducedMotion:f.get('reducedMotion')==='on'}); closeOverlay('#ovPreferences'); toast('تم تطبيق تخصيص الواجهة','success'); };
+  const btn=$('#uiPrefsBtn'); if(btn) btn.onclick=openPreferences;
 }
 
 /* ============ 8) عرض الأقسام ============ */
@@ -288,6 +329,8 @@ function renderAuth(){
           <button class="dd-item" data-go="fav"><svg class="ic" style="width:17px"><use href="#i-heart"/></svg> المفضلة</button>
           <button class="dd-item" data-go="inbox"><svg class="ic" style="width:17px"><use href="#i-mail"/></svg> الرسائل</button>
           <div class="dd-sep"></div>
+          <button class="dd-item" data-go="account"><img class="ui-icon" src="assets/icons/settings.svg" alt="" aria-hidden="true"/> إعدادات الحساب</button>
+          <button class="dd-item" data-go="admin"><img class="ui-icon" src="assets/icons/shield-lock.svg" alt="" aria-hidden="true"/> لوحة المدير</button>
           <button class="dd-item" id="logoutBtn" style="color:var(--danger)">
             <svg class="ic" style="width:17px"><use href="#i-out"/></svg> تسجيل الخروج
           </button>
@@ -303,9 +346,12 @@ function renderAuth(){
         if(g.dataset.go==='fav') openFav();
         if(g.dataset.go==='inbox') openInbox();
         if(g.dataset.go==='profile') openProfile(currentUser.id);
+        if(g.dataset.go==='account') openAccountSettings();
+        if(g.dataset.go==='admin') openAdminEntry();
       }
     };
-    $('#logoutBtn').onclick = ()=>{
+    $('#logoutBtn').onclick = async ()=>{
+      try{ await api('/api/logout',{method:'POST',body:'{}'}); }catch(_){ }
       currentUser = null;
       store.set(K.session,null);
       renderAll();
@@ -328,6 +374,63 @@ function switchAuthTab(tab){
   if(fl) fl.style.display = tab==='login' ? '' : 'none';
   if(fr) fr.style.display = tab==='reg'   ? '' : 'none';
   if(at) at.textContent   = tab==='login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد';
+}
+
+function openAccountSettings(){
+  if(!currentUser){ openAuth('login'); return; }
+  const form=$('#formProfileSettings'); if(!form) return;
+  const set=(name,value)=>{ const el=form.elements[name]; if(el) el.value=value||''; };
+  set('name',currentUser.name); set('phone',currentUser.phone); set('city',currentUser.city); set('email',currentUser.email);
+  set('avatarUrl',currentUser.avatarUrl); set('bio',currentUser.bio);
+  set('telegram',currentUser.socialLinks?.telegram); set('social',currentUser.socialLinks?.social);
+  const showPhone=form.elements.showPhone; if(showPhone) showPhone.checked=!!currentUser.visibility?.showPhone;
+  const preview=$('#settingsAvatarPreview'); if(preview) preview.innerHTML=currentUser.avatarUrl?`<img src="${esc(safeHttpUrl(currentUser.avatarUrl))}" alt=""/>`:esc((currentUser.name||'م').charAt(0));
+  const sec=$('#formSecuritySettings'); if(sec) sec.elements.currentEmail.value=currentUser.email||'غير مضاف';
+  $$('.account-panel').forEach(p=>p.style.display=p.dataset.accountPanel==='profile'?'':'none');
+  $$('.account-tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.accountTab==='profile'));
+  openOverlay('#ovAccount');
+}
+function updateLocalUser(patch){
+  currentUser={...currentUser,...patch}; users=users.map(u=>u.id===currentUser.id?{...u,...patch}:u); store.set(K.users,users); store.set(K.session,currentUser.id); renderAll();
+}
+async function saveProfileSettings(form){
+  const f=new FormData(form); const socialLinks={telegram:safeHttpUrl(f.get('telegram')),social:safeHttpUrl(f.get('social'))};
+  const patch={name:String(f.get('name')||'').trim(),city:String(f.get('city')||''),email:String(f.get('email')||'').trim(),avatarUrl:safeHttpUrl(f.get('avatarUrl')),bio:String(f.get('bio')||'').trim().slice(0,1200),socialLinks,visibility:{...(currentUser.visibility||{}),showPhone:f.get('showPhone')==='on'}};
+  if(!patch.name){toast('اكتب الاسم أولاً','error');return;}
+  try{ const data=await api('/api/me',{method:'PATCH',body:JSON.stringify(patch)}); updateLocalUser(data.user); toast('تم حفظ الملف العام','success'); }
+  catch(err){ if(err.message==='api_unavailable'){ updateLocalUser(patch); toast('تم حفظ الملف على هذا الجهاز','success'); } else toast('تعذر حفظ الملف: '+err.message,'error'); }
+}
+async function saveSecuritySettings(form){
+  const f=new FormData(form), currentPassword=String(f.get('currentPassword')||''), newPassword=String(f.get('newPassword')||''), confirm=String(f.get('confirmPassword')||''), newEmail=String(f.get('newEmail')||'').trim(), newPhone=String(f.get('newPhone')||'').trim();
+  if(!API_AVAILABLE){toast('تغيير كلمة المرور والرقم يحتاج تشغيل الخادم الآمن','error');return;}
+  if(newPassword && (newPassword.length<8 || newPassword!==confirm)){toast('تحقق من كلمة المرور الجديدة وتأكيدها','error');return;}
+  try{
+    if(newEmail||newPhone){ const data=await api('/api/me/contact',{method:'POST',body:JSON.stringify({currentPassword,newEmail,newPhone})}); updateLocalUser(data.user); }
+    if(newPassword) await api('/api/me/password',{method:'POST',body:JSON.stringify({currentPassword,newPassword})});
+    form.reset(); toast('تم تحديث أمان الحساب بنجاح','success');
+  }catch(err){toast('تعذر تحديث الأمان: '+err.message,'error');}
+}
+async function openAdminEntry(){
+  if(adminSession){ await renderAdminDashboard(); openOverlay('#ovAdmin'); return; }
+  openOverlay('#ovAdminLogin');
+}
+async function renderAdminDashboard(){
+  const box=$('#adminBox'); if(!box) return;
+  if(!API_AVAILABLE){ box.innerHTML='<div class="security-callout"><img class="ui-icon" src="assets/icons/shield-lock.svg" alt=""/><div><b>لوحة المدير تحتاج خادماً</b><p>GitHub Pages يعرض الملفات فقط. شغّل server.js على Node/Pella واضبط ADMIN_PHONE وADMIN_PASSWORD_HASH كأسرار بيئية.</p></div></div>'; return; }
+  try{
+    const data=await api('/api/admin/data');
+    box.innerHTML=`<div class="admin-stats"><div class="admin-stat"><b>${num(data.stats.users)}</b><span>المستخدمون</span></div><div class="admin-stat"><b>${num(data.stats.listings)}</b><span>الإعلانات</span></div><div class="admin-stat"><b>${num(data.stats.reports)}</b><span>البلاغات</span></div><div class="admin-stat"><b>${num(data.stats.views)}</b><span>المشاهدات</span></div></div>
+      <div class="admin-section"><h3><img class="ui-icon" src="assets/icons/package.svg" alt=""/> إدارة الإعلانات <button class="btn btn-ghost btn-sm" id="adminRefresh" style="margin-inline-start:auto">تحديث</button></h3>
+      ${data.listings.slice(0,20).map(l=>`<div class="admin-row"><div class="admin-main"><b>${esc(l.title)}</b><small>${esc(l.city)} • ${l.moderationStatus||'published'} • ${num(l.views||0)} مشاهدة</small></div><button class="btn btn-ghost" data-admin-hide="${esc(l.id)}">${l.moderationStatus==='hidden'?'إظهار':'إخفاء'}</button><button class="btn btn-danger" data-admin-delete="${esc(l.id)}">حذف</button></div>`).join('')||'<p class="hint">لا توجد إعلانات.</p>'}</div>
+      <div class="admin-section"><h3><img class="ui-icon" src="assets/icons/lock.svg" alt=""/> إدارة المحتوى</h3><form id="adminContentForm"><div class="form-2"><select class="inp" name="key">${Object.keys(data.content).map(k=>`<option value="${esc(k)}">${esc(data.content[k].title||k)}</option>`).join('')}</select><input class="inp" name="title" placeholder="عنوان الصفحة" required/></div><textarea class="inp" name="body" rows="4" placeholder="محتوى الصفحة" required></textarea><button class="btn btn-primary" type="submit">حفظ المحتوى</button></form></div>
+      <div class="admin-section"><h3><img class="ui-icon" src="assets/icons/video.svg" alt=""/> البنرات والإعلانات المتحركة</h3><form id="adminBannerForm"><div class="form-2"><input class="inp" name="title" placeholder="عنوان البنر" required/><input class="inp" name="imageUrl" type="url" placeholder="رابط صورة HTTPS"/></div><input class="inp" name="targetUrl" type="url" placeholder="رابط الوجهة"/><textarea class="inp" name="body" rows="2" placeholder="النص القصير"></textarea><button class="btn btn-accent" type="submit">إضافة للواجهة</button></form></div>
+      <div class="admin-section"><h3><img class="ui-icon" src="assets/icons/chart-bar.svg" alt=""/> آخر نشاط إداري</h3><button class="btn btn-ghost" id="adminLogout">تسجيل خروج المدير</button></div>`;
+    const contentForm=$('#adminContentForm'); if(contentForm){ const first=Object.values(data.content)[0]||{}; contentForm.elements.title.value=first.title||''; contentForm.elements.body.value=first.body||''; contentForm.elements.key.onchange=()=>{const c=data.content[contentForm.elements.key.value]||{};contentForm.elements.title.value=c.title||'';contentForm.elements.body.value=c.body||'';}; contentForm.onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api('/api/admin/content/'+encodeURIComponent(f.get('key')),{method:'PATCH',body:JSON.stringify({title:f.get('title'),body:f.get('body')})});toast('تم حفظ المحتوى','success');}catch(err){toast(err.message,'error');}}; }
+    const bannerForm=$('#adminBannerForm'); if(bannerForm) bannerForm.onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api('/api/admin/banners',{method:'POST',body:JSON.stringify({title:f.get('title'),body:f.get('body'),imageUrl:f.get('imageUrl'),targetUrl:f.get('targetUrl')})});e.target.reset();toast('تمت إضافة البنر للواجهة','success');}catch(err){toast(err.message,'error');}};
+    $('#adminRefresh')?.addEventListener('click',renderAdminDashboard); $('#adminLogout')?.addEventListener('click',async()=>{try{await api('/api/admin/logout',{method:'POST',body:'{}'});}catch(_){ }adminSession=false;closeOverlay('#ovAdmin');toast('تم تسجيل خروج المدير');});
+    box.querySelectorAll('[data-admin-delete]').forEach(btn=>btn.onclick=async()=>{if(!confirm('حذف الإعلان نهائياً؟'))return;try{await api('/api/admin/listings/'+btn.dataset.adminDelete,{method:'DELETE'});toast('تم حذف الإعلان','success');await renderAdminDashboard();renderAll();}catch(err){toast(err.message,'error');}});
+    box.querySelectorAll('[data-admin-hide]').forEach(btn=>btn.onclick=async()=>{const row=data.listings.find(x=>x.id===btn.dataset.adminHide);try{await api('/api/admin/listings/'+btn.dataset.adminHide,{method:'PATCH',body:JSON.stringify({moderationStatus:row.moderationStatus==='hidden'?'published':'hidden'})});await renderAdminDashboard();}catch(err){toast(err.message,'error');}});
+  }catch(err){ box.innerHTML=`<div class="security-callout"><img class="ui-icon" src="assets/icons/refresh.svg" alt=""/><div><b>تعذر تحميل لوحة المدير</b><p>${esc(err.message)}</p></div></div>`; }
 }
 
 /* ============ 11) الفلترة والعرض ============ */
@@ -364,8 +467,9 @@ function avgRating(userId){
 }
 
 /* ============ 12) بطاقة المنتج ============ */
+function primaryImage(l){ return safeHttpUrl(l.coverUrl || (l.images&&l.images[0]) || '') || PLACEHOLDER_IMAGE; }
 function cardHTML(l){
-  const img = (l.images && l.images[0]) ? l.images[0] : PLACEHOLDER_IMAGE;
+  const img = primaryImage(l);
   const isFav = currentUser && favs.some(f=>f.userId===currentUser.id && f.listingId===l.id);
   const seller = users.find(u=>u.id===l.userId) || {};
   const r = avgRating(l.userId);
@@ -379,6 +483,7 @@ function cardHTML(l){
         <svg class="ic" style="width:19px;height:19px"><use href="#i-heart"/></svg>
       </button>
       ${l.featured ? `<span class="tag">${iconHTML('star')} مميز</span>` : ''}
+      ${(l.videoUrls||[]).length ? `<span class="media-badge">${iconHTML('video','inline-icon')} فيديو</span>` : ''}
       ${seller.verified ? '<span class="verified-tag"><svg class="ic"><use href="#i-shield"/></svg> موثّق</span>' : ''}
     </div>
     <div class="card-body">
@@ -456,7 +561,8 @@ function openDetail(id){
   pushRecent(id);
 
   const seller = users.find(u=>u.id===l.userId) || {name:'مستخدم', city:'—'};
-  const imgs = (l.images && l.images.length) ? l.images : [PLACEHOLDER_IMAGE];
+  const imgs = [...new Set([primaryImage(l), ...(Array.isArray(l.galleryUrls)?l.galleryUrls:[]), ...((l.images||[]))].map(safeHttpUrl).filter(Boolean))];
+  if(!imgs.length) imgs.push(PLACEHOLDER_IMAGE);
   const isFav = currentUser && favs.some(f=>f.userId===currentUser.id && f.listingId===l.id);
   const isMine = currentUser && currentUser.id===l.userId;
 
@@ -504,6 +610,9 @@ function openDetail(id){
         <div style="font-weight:800;margin-bottom:7px">📝 الوصف</div>
         <div class="desc-box">${esc(l.desc)}</div>
       </div>
+
+      ${(l.videoUrls||[]).length ? `<div class="detail-media-block"><div style="font-weight:800;margin-bottom:8px">${iconHTML('video','inline-icon')} فيديو المنتج</div><div class="video-grid">${l.videoUrls.slice(0,2).map(v=>`<video controls preload="metadata" playsinline src="${esc(safeHttpUrl(v))}"></video>`).join('')}</div></div>` : ''}
+      ${safeHttpUrl(l.contactUrl) ? `<a class="btn btn-accent btn-block" href="${esc(safeHttpUrl(l.contactUrl))}" target="_blank" rel="noopener noreferrer">${iconHTML('external-link','inline-icon')} التواصل مع صاحب الإعلان</a>` : ''}
 
       <div class="spec-grid">
         ${l.brand?`<div><small>الماركة</small><b>${esc(l.brand)}</b></div>`:''}
@@ -618,6 +727,10 @@ document.addEventListener('click', e=>{
   if(simB){ closeOverlay('#ovDetail'); openDetail(simB.dataset.similar); }
   if(delB){
     if(!confirm('هل أنت متأكد من حذف هذا الإعلان نهائياً؟')) return;
+    if(API_AVAILABLE){
+      api('/api/listings/'+encodeURIComponent(delB.dataset.del),{method:'DELETE',body:'{}'}).then(()=>{listings=listings.filter(x=>x.id!==delB.dataset.del);store.set(K.listings,listings);closeOverlay('#ovDetail');renderAll();toast('تم حذف الإعلان','success');}).catch(err=>toast(err.message==='forbidden'?'لا تملك صلاحية حذف هذا الإعلان':'تعذر حذف الإعلان','error'));
+      return;
+    }
     listings = listings.filter(x=>x.id!==delB.dataset.del);
     store.set(K.listings,listings);
     closeOverlay('#ovDetail');
@@ -750,11 +863,20 @@ function setupAddForm(){
         delivery: String(f.get('delivery')||'pickup'),
         negotiable: f.get('negotiable') === 'on',
         images: pendingImages.slice(),
+        coverUrl: pendingImages[0] || '',
+        galleryUrls: pendingImages.slice(1),
+        contactUrl: safeHttpUrl(f.get('contactUrl')),
+        videoUrls: String(f.get('videoUrls')||'').split(',').map(safeHttpUrl).filter(Boolean).slice(0,2),
         featured: !!f.get('featured'),
         views: 0, ts: Date.now()
       };
 
       if(!l.images.length) l.images = [PLACEHOLDER_IMAGE];
+
+      if(API_AVAILABLE){
+        api('/api/listings',{method:'POST',body:JSON.stringify(l)}).then(data=>{listings.unshift(data.listing);store.set(K.listings,listings);closeOverlay('#ovAdd');pendingImages=[];renderAll();toast('تم نشر إعلانك بنجاح ✅','success');setTimeout(()=>openDetail(data.listing.id),250);}).catch(err=>toast('تعذر نشر الإعلان: '+err.message,'error'));
+        return;
+      }
 
       listings.unshift(l);
       if(!store.set(K.listings,listings)) return;
@@ -1252,6 +1374,20 @@ function renderAll(){
   renderRecent();
   updateBadges();
 }
+async function hydrateFromServer(){
+  if(!API_AVAILABLE) return;
+  try{
+    const data=await api('/api/data');
+    if(Array.isArray(data.listings)){ listings=data.listings; store.set(K.listings,listings); }
+    try{
+      const content=await api('/api/content'); const banners=(content.banners||[]).filter(b=>b.title&&b.status!=='hidden').slice(0,5); const track=$('#sliderTrack');
+      if(banners.length&&track){ track.innerHTML=banners.map((b,i)=>`<div class="slide slide-remote" style="background-image:linear-gradient(90deg,rgba(15,23,42,.94),rgba(29,78,216,.35)),url('${esc(safeHttpUrl(b.imageUrl)||'assets/marketplace-hero.jpg')}')"><div class="slide-content"><span class="slide-badge">سوق الشورجة</span><h2>${esc(b.title)}</h2><p>${esc(b.body||'اكتشف أحدث الإعلانات والعروض')}</p>${safeHttpUrl(b.targetUrl)?`<a class="btn btn-light" href="${esc(safeHttpUrl(b.targetUrl))}" target="_blank" rel="noopener noreferrer">اكتشف الآن</a>`:''}</div></div>`).join(''); initSlider(); }
+    }catch(_){ }
+    const me=await api('/api/me'); if(me.user){ currentUser=me.user; users=users.filter(u=>u.id!==currentUser.id).concat(currentUser); store.set(K.users,users); store.set(K.session,currentUser.id); }
+    try{ await api('/api/admin/me'); adminSession=true; }catch(_){ adminSession=false; }
+    renderAll();
+  }catch(_){ /* GitHub Pages أو وضع العرض المحلي: استخدم التخزين المحلي */ }
+}
 
 function init(){
   seed();
@@ -1262,6 +1398,7 @@ function init(){
   const lc = $('#langCode'); if(lc) lc.textContent = lang.toUpperCase();
 
   fillSelects();
+  const settingsCity=$('#settingsCity'); if(settingsCity) settingsCity.innerHTML=`<option value="">اختر المدينة</option>`+CITIES.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
   renderSideCats();
   renderQuickCats();
   renderFilterCats();
@@ -1273,6 +1410,8 @@ function init(){
   renderAll();
   setupAddBtn();
   setupAddForm();
+  setupPreferences();
+  hydrateFromServer();
 
   const yr = $('#year'); if(yr) yr.textContent = new Date().getFullYear();
 
@@ -1289,6 +1428,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /* --- الهيدر --- */
   const themeBtn = $('#themeBtn'); if(themeBtn) themeBtn.onclick = toggleTheme;
   const langBtn  = $('#langBtn');  if(langBtn)  langBtn.onclick  = toggleLang;
+  const adminQuickBtn=$('#adminQuickBtn'); if(adminQuickBtn) adminQuickBtn.onclick=openAdminEntry;
 
   const favBtn = $('#favBtn');
   if(favBtn) favBtn.onclick = ()=>{ if(!currentUser){openAuth('login');return;} openFav(); };
@@ -1384,15 +1524,34 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   /* --- تابات المصادقة --- */
   $$('.tab').forEach(t=> t.onclick = ()=>switchAuthTab(t.dataset.tab));
+  $$('.account-tabs .tab').forEach(t=>t.onclick=()=>{
+    $$('.account-tabs .tab').forEach(x=>x.classList.toggle('active',x===t));
+    $$('.account-panel').forEach(p=>p.style.display=p.dataset.accountPanel===t.dataset.accountTab?'':'none');
+  });
+  const profileSettings=$('#formProfileSettings'); if(profileSettings) profileSettings.onsubmit=e=>{e.preventDefault();saveProfileSettings(e.target);};
+  const securitySettings=$('#formSecuritySettings'); if(securitySettings) securitySettings.onsubmit=e=>{e.preventDefault();saveSecuritySettings(e.target);};
+  const adminLogin=$('#formAdminLogin'); if(adminLogin) adminLogin.onsubmit=async e=>{
+    e.preventDefault(); const f=new FormData(e.target);
+    if(!API_AVAILABLE){toast('لوحة المدير تحتاج تشغيل server.js وليس GitHub Pages','error');return;}
+    try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({phone:f.get('phone'),pass:f.get('pass')})}); adminSession=true; e.target.reset(); closeOverlay('#ovAdminLogin'); await renderAdminDashboard(); openOverlay('#ovAdmin'); toast('تم دخول المدير بأمان','success');}
+    catch(err){toast(err.message==='admin_secret_not_configured'?'لم يتم ضبط سر المدير على الخادم':'بيانات المدير غير صحيحة','error');}
+  };
+  document.addEventListener('click',e=>{const a=e.target.closest('[data-info]');if(a){e.preventDefault();openInfo(a.dataset.info);}});
+  $('#footerYoutube')?.addEventListener('click',e=>{e.preventDefault();toast('رابط يوتيوب سيضاف من لوحة المدير');});
+  setupPreferences();
 
   /* --- تسجيل الدخول --- */
   const formLogin = $('#formLogin');
   if(formLogin){
-    formLogin.onsubmit = e=>{
+    formLogin.onsubmit = async e=>{
       e.preventDefault();
       const f = new FormData(e.target);
       const phone = String(f.get('phone')).trim();
       const pass  = String(f.get('pass'));
+      if(API_AVAILABLE){
+        try{ const data=await api('/api/login',{method:'POST',body:JSON.stringify({phone,pass})}); currentUser=data.user; users=users.filter(u=>u.id!==currentUser.id).concat(currentUser); store.set(K.users,users); store.set(K.session,currentUser.id); closeOverlay('#ovAuth'); e.target.reset(); renderAll(); toast('مرحباً، '+currentUser.name.split(' ')[0]+' 👋','success'); return; }
+        catch(err){ if(err.message!=='api_unavailable' && err.status!==404){toast('بيانات الدخول غير صحيحة','error');return;} }
+      }
       const u = users.find(x=>x.phone===phone && x.pass===pass);
       if(!u){ toast('بيانات الدخول غير صحيحة','error'); return; }
       currentUser = u;
@@ -1407,13 +1566,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
   /* --- التسجيل --- */
   const formReg = $('#formReg');
   if(formReg){
-    formReg.onsubmit = e=>{
+    formReg.onsubmit = async e=>{
       e.preventDefault();
       const f = new FormData(e.target);
       const name  = String(f.get('name')).trim();
       const phone = String(f.get('phone')).trim();
       const city  = String(f.get('city'));
       const pass  = String(f.get('pass'));
+      if(API_AVAILABLE){
+        try{ const data=await api('/api/register',{method:'POST',body:JSON.stringify({name,phone,city,pass})}); currentUser=data.user; users=users.filter(u=>u.id!==currentUser.id).concat(currentUser); store.set(K.users,users); store.set(K.session,currentUser.id); closeOverlay('#ovAuth'); e.target.reset(); renderAll(); toast('تم إنشاء حسابك 🎉','success'); return; }
+        catch(err){ if(err.status!==404){toast(err.message==='phone_exists'?'الرقم مسجل مسبقاً':'تعذر إنشاء الحساب','error');return;} }
+      }
       if(users.some(u=>u.phone===phone)){ toast('الرقم مسجل مسبقاً','error'); return; }
       const u = {id:uid(), name, phone, city, pass, ts:Date.now(), verified:false, bio:''};
       users.push(u);
@@ -1633,7 +1796,7 @@ function toggleFeaturedListing(id){
   if($('#ovMy')?.classList.contains('open')) openMy();
 }
 
-function openInfo(type){
+async function openInfo(type){
   ensureEnhancementsUI();
   const data = {
     about: ['عن سوق الشورجة', '<p>سوق الشورجة منصة عراقية لعرض وشراء وبيع مختلف المنتجات والإعلانات، مع بحث وفلترة ومفضلة ومحادثات وتقييمات.</p><p class="hint">يمكنك نشر إعلان، التواصل مع البائع، حفظ الإعلانات ومتابعة إشعاراتك من نفس الموقع.</p>'],
@@ -1643,8 +1806,10 @@ function openInfo(type){
     privacy: ['سياسة الخصوصية', '<p>هذا الإصدار يخزن البيانات محلياً في المتصفح، ومع تشغيل السيرفر تتم مزامنتها مع ملف <code>data.json</code>.</p><p class="hint">لا تشارك كلمات المرور أو البيانات الحساسة مع أي شخص.</p>']
   };
   const d = data[type] || data.about;
-  $('#infoTitle').textContent = d[0];
-  $('#infoBody').innerHTML = d[1];
+  let title=d[0], body=d[1];
+  if(API_AVAILABLE){ try{ const remote=await api('/api/content'); const item=remote.content?.[type]; if(item){title=item.title;body=`<p>${esc(item.body)}</p>`;} }catch(_){ } }
+  $('#infoTitle').textContent = title;
+  $('#infoBody').innerHTML = body;
   openOverlay('#ovInfo');
 }
 
