@@ -151,14 +151,20 @@ function loadDB() {
     normalizeDB();
   }
 }
-function saveDB() {
-  const tmp = DATA_FILE + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(db, null, 2), 'utf8');
-  fs.renameSync(tmp, DATA_FILE);
+async function saveDB() {
+  try {
+    const tmp = DATA_FILE + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(db, null, 2), 'utf8');
+    fs.renameSync(tmp, DATA_FILE);
+  } catch (error) {
+    // Vercel Functions have an ephemeral/read-only filesystem; Supabase is the durable store.
+    if (!SUPABASE_STATE_URL || !SUPABASE_KEY) console.error('تعذر الحفظ المحلي:', error.message);
+  }
   if (SUPABASE_STATE_URL && SUPABASE_KEY) {
     const remote = { id:'global', users:db.users, listings:db.listings, favs:db.favs, messages:db.messages, reviews:db.reviews, notifications:db.notifications, reports:db.reports, site_content:db.siteContent, homepage_banners:db.homepageBanners, animated_ads:db.animatedAds, social_links:db.socialLinks, audit_events:db.auditEvents, updated_at:new Date().toISOString() };
-    fetch(SUPABASE_STATE_URL, { method:'PATCH', headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify(remote) }).catch(error=>console.error('Supabase sync failed:',error.message));
+    return fetch(SUPABASE_STATE_URL, { method:'PATCH', headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify(remote) }).then(response=>{ if(!response.ok) throw new Error(`Supabase ${response.status}`); }).catch(error=>console.error('Supabase sync failed:',error.message));
   }
+  return Promise.resolve();
 }
 async function loadRemoteDB(){
   if(!SUPABASE_STATE_URL || !SUPABASE_KEY) return;
@@ -240,12 +246,12 @@ app.get('/api/data', (req, res) => {
   res.json({ users: db.users.map(publicUser), listings: db.listings.filter(l => l.moderationStatus !== 'hidden').map(publicListing), reviews: db.reviews, reports: [] });
 });
 
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
   const body = req.body || {}, name = String(body.name || '').trim().slice(0, 100), phone = normalizePhone(body.phone), pass = String(body.pass || '');
   if (!name || !/^07\d{9}$/.test(phone) || pass.length < 8) return res.status(400).json({ error: 'invalid_input' });
   if (phone === ADMIN_PHONE || db.users.some(u => normalizePhone(u.phone) === phone)) return res.status(409).json({ error: 'phone_exists' });
   const user = { id: uid(), name, phone, city: String(body.city || '').slice(0, 80), passwordHash: hashPassword(pass), ts: now(), verified: false, bio: '', role: 'user', status: 'active', socialLinks: {}, visibility: { showPhone: false, showEmail: false, showSocial: true } };
-  db.users.push(user); saveDB(); createSession(sessions, user.id, res, 'sq_session');
+  db.users.push(user); await saveDB(); createSession(sessions, user.id, res, 'sq_session');
   res.status(201).json({ user: publicUser(user) });
 });
 app.post('/api/login', (req, res) => {
