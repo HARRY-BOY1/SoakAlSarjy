@@ -8,6 +8,7 @@
   let pushing = false;
   let pendingLocalChange = false;
   let internalWrite = false;
+  let backendAvailable = true;
 
   function read(k, d) {
     try { const v=JSON.parse(localStorage.getItem(k)); return v===null||v===undefined?d:v; }
@@ -25,10 +26,10 @@
   }
 
   async function pull() {
-    if(pushing || pendingLocalChange) return false;
+    if(!backendAvailable || pushing || pendingLocalChange) return false;
     try {
       const r=await fetch(API+'/api/data',{cache:'no-store'});
-      if(!r.ok) return false;
+      if(!r.ok){ backendAvailable=false; return false; }
       const d=await r.json();
       const incoming=JSON.stringify({
         u:d.users||[],l:d.listings||[],m:d.messages||[],
@@ -45,11 +46,11 @@
       internalWrite=false;
       lastHash=snapshot();
       return true;
-    } catch(e) { return false; }
+    } catch(e) { backendAvailable=false; return false; }
   }
 
   async function push() {
-    if(pushing) return;
+    if(!backendAvailable || pushing) return;
     pushing=true;
     pendingLocalChange=false;
     try {
@@ -63,7 +64,7 @@
         })
       });
       if(r.ok){ lastHash=snapshot(); }
-    }catch(e){} finally{ pushing=false; }
+    }catch(e){ backendAvailable=false; } finally{ pushing=false; }
   }
 
   const _set=localStorage.setItem.bind(localStorage);
@@ -81,7 +82,7 @@
     if(ok && typeof window.renderAll==='function') refreshUI();
 
     setInterval(async()=>{
-      if(pushing || pendingLocalChange) return;
+      if(!backendAvailable || pushing || pendingLocalChange) return;
       const before=snapshot();
       const got=await pull();
       if(got && before!==snapshot()) refreshUI();
