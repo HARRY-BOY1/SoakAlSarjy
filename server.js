@@ -14,7 +14,11 @@ const HOST = process.env.HOST || '0.0.0.0';
 const DATA_FILE = path.join(__dirname, 'data.json');
 const ADMIN_PHONE = normalizePhone(process.env.ADMIN_PHONE || '07748820203');
 const ADMIN_PASSWORD_HASH = String(process.env.ADMIN_PASSWORD_HASH || '');
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '');
 const SESSION_TTL = 1000 * 60 * 60 * 24 * 7;
+const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_KEY = String(process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || '');
+const SUPABASE_STATE_URL = SUPABASE_URL ? `${SUPABASE_URL}/rest/v1/marketplace_state?id=eq.global` : '';
 const sessions = new Map();
 const adminSessions = new Map();
 const loginAttempts = new Map();
@@ -151,6 +155,25 @@ function saveDB() {
   const tmp = DATA_FILE + '.tmp';
   fs.writeFileSync(tmp, JSON.stringify(db, null, 2), 'utf8');
   fs.renameSync(tmp, DATA_FILE);
+  if (SUPABASE_STATE_URL && SUPABASE_KEY) {
+    const remote = { id:'global', users:db.users, listings:db.listings, favs:db.favs, messages:db.messages, reviews:db.reviews, notifications:db.notifications, reports:db.reports, site_content:db.siteContent, homepage_banners:db.homepageBanners, animated_ads:db.animatedAds, social_links:db.socialLinks, audit_events:db.auditEvents, updated_at:new Date().toISOString() };
+    fetch(SUPABASE_STATE_URL, { method:'PATCH', headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify(remote) }).catch(error=>console.error('Supabase sync failed:',error.message));
+  }
+}
+async function loadRemoteDB(){
+  if(!SUPABASE_STATE_URL || !SUPABASE_KEY) return;
+  try {
+    const response=await fetch(SUPABASE_STATE_URL,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`} });
+    if(!response.ok) return;
+    const rows=await response.json(); const remote=rows[0]; if(!remote) return;
+    for(const key of ['users','listings','favs','messages','reviews','notifications','reports']) if(Array.isArray(remote[key])) db[key]=remote[key];
+    if(remote.site_content && typeof remote.site_content==='object') db.siteContent=remote.site_content;
+    if(Array.isArray(remote.homepage_banners)) db.homepageBanners=remote.homepage_banners;
+    if(Array.isArray(remote.animated_ads)) db.animatedAds=remote.animated_ads;
+    if(Array.isArray(remote.social_links)) db.socialLinks=remote.social_links;
+    if(Array.isArray(remote.audit_events)) db.auditEvents=remote.audit_events;
+    normalizeDB();
+  } catch(error) { console.error('تعذر تحميل بيانات Supabase:',error.message); }
 }
 function audit(action, actor, meta = {}) {
   db.auditEvents.unshift({ id: uid(), action, actorId: actor?.id || 'system', ts: now(), meta });
@@ -208,6 +231,7 @@ function cleanListing(body, ownerId) {
 }
 
 loadDB();
+loadRemoteDB();
 
 app.get('/health', (req, res) => res.json({ ok: true, service: 'al-shorja-market', uptime: Math.floor(process.uptime()) }));
 app.get('/api/content', (req, res) => res.json({ content: db.siteContent, banners: db.homepageBanners.filter(x => x.status !== 'hidden'), ads: db.animatedAds.filter(x => x.status !== 'hidden'), socials: db.socialLinks }));
@@ -258,11 +282,12 @@ app.post('/api/me/password', requireUser, (req, res) => {
 });
 
 app.post('/api/admin/login', (req, res) => {
-  if (!ADMIN_PASSWORD_HASH) return res.status(503).json({ error: 'admin_secret_not_configured' });
+  if (!ADMIN_PASSWORD_HASH && !ADMIN_PASSWORD) return res.status(503).json({ error: 'admin_secret_not_configured' });
   const phone = normalizePhone(req.body?.phone), pass = String(req.body?.pass || ''), key = `${req.ip}:${phone}`;
   const attempt = loginAttempts.get(key) || { count: 0, until: 0 };
   if (attempt.until > now()) return res.status(429).json({ error: 'try_later' });
-  if (phone !== ADMIN_PHONE || !verifyPassword(pass, ADMIN_PASSWORD_HASH)) {
+  const passwordOk = ADMIN_PASSWORD_HASH ? verifyPassword(pass, ADMIN_PASSWORD_HASH) : pass === ADMIN_PASSWORD;
+  if (phone !== ADMIN_PHONE || !passwordOk) {
     attempt.count += 1; if (attempt.count >= 5) { attempt.until = now() + 15 * 60 * 1000; attempt.count = 0; } loginAttempts.set(key, attempt);
     return res.status(401).json({ error: 'invalid' });
   }
