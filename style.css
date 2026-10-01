@@ -901,3 +901,17 @@ textarea.inp{resize:vertical;min-height:110px;line-height:1.7}
   .card-body{padding-inline:8px}
   .card-meta{font-size:10px}
 }
+
+
+/* ============ Marketplace upgrade ============ */
+.slide-1{background-image:linear-gradient(90deg,rgba(15,23,42,.96) 0%,rgba(29,78,216,.72) 62%,rgba(29,78,216,.18)),url('assets/marketplace-hero.jpg');background-size:cover;background-position:center}
+.slide-2{background-image:linear-gradient(90deg,rgba(124,45,18,.94) 0%,rgba(234,88,12,.62) 62%,rgba(234,88,12,.18)),url('assets/marketplace-shopping.jpg');background-size:cover;background-position:center}
+.slide-3{background-image:linear-gradient(90deg,rgba(6,78,59,.95) 0%,rgba(5,150,105,.65) 62%,rgba(5,150,105,.16)),url('assets/marketplace-tech.jpg');background-size:cover;background-position:center}
+.card-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:-2px}
+.card-badges span{font-size:10.5px;font-weight:800;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 7px}
+.spec-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px}
+.spec-grid div{display:grid;gap:2px;min-width:0}
+.spec-grid small{color:var(--muted);font-size:11px}
+.spec-grid b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uploader.dragover{border-color:var(--primary);background:var(--primary-50);transform:scale(1.01)}
+@media(max-width:520px){.spec-grid{gap:6px;padding:8px}.spec-grid b{font-size:12px}}

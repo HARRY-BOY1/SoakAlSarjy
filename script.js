@@ -28,6 +28,8 @@ const CATEGORIES = [
 
 const CITIES = ['بغداد','البصرة','الموصل','أربيل','النجف','كربلاء','كركوك','الأنبار','بابل',
   'ديالى','ذي قار','السليمانية','دهوك','واسط','ميسان','المثنى','صلاح الدين','القادسية'];
+const LISTING_TYPES = {sale:'بيع',wanted:'مطلوب',exchange:'بدل/تبادل'};
+const CONDITIONS = {new:'جديد',used:'مستعمل',refurbished:'مجدد'};
 
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"%3E%3Crect width="800" height="600" fill="%23eef2f7"/%3E%3Cpath d="M250 390l90-105 75 82 60-65 125 138H200z" fill="%23cbd5e1"/%3E%3Ccircle cx="520" cy="220" r="48" fill="%23cbd5e1"/%3E%3Ctext x="400" y="500" text-anchor="middle" font-family="Arial" font-size="28" fill="%2364758b"%3Eلا توجد صورة%3C/text%3E%3C/svg%3E';
 
@@ -102,9 +104,10 @@ let recent    = store.get(K.recent,[]);
 let currentUser = null;
 let lang = store.get(K.lang,'ar');
 
-let filters = { q:'', cat:'all', city:'all', min:'', max:'', sort:'new' };
+let filters = { q:'', cat:'all', city:'all', min:'', max:'', condition:'all', type:'all', sort:'new' };
 let pendingImages = [];
 let activeChat = null;
+let activeOfferListingId = null;
 
 /* ============ 5) تنظيف بيانات العرض القديمة ============ */
 function seed(){
@@ -329,15 +332,17 @@ function switchAuthTab(tab){
 /* ============ 11) الفلترة والعرض ============ */
 function getFiltered(){
   let arr = listings.slice();
-  const {q,cat,city,min,max,sort} = filters;
+  const {q,cat,city,min,max,condition,type,sort} = filters;
 
   if(cat!=='all')  arr = arr.filter(l=>l.cat===cat);
   if(city!=='all') arr = arr.filter(l=>l.city===city);
   if(min!=='')     arr = arr.filter(l=>Number(l.price)>=Number(min));
   if(max!=='')     arr = arr.filter(l=>Number(l.price)<=Number(max));
+  if(condition!=='all') arr = arr.filter(l=>(l.condition||'used')===condition);
+  if(type!=='all') arr = arr.filter(l=>(l.type||'sale')===type);
   if(q.trim()){
     const s = q.trim().toLowerCase();
-    arr = arr.filter(l=>(l.title+' '+l.desc+' '+l.city+' '+catObj(l.cat).name).toLowerCase().includes(s));
+    arr = arr.filter(l=>(l.title+' '+l.desc+' '+l.city+' '+(l.brand||'')+' '+(l.model||'')+' '+(l.tags||[]).join(' ')+' '+catObj(l.cat).name).toLowerCase().includes(s));
   }
 
   if(sort==='new')        arr.sort((a,b)=>b.ts-a.ts);
@@ -377,7 +382,8 @@ function cardHTML(l){
     </div>
     <div class="card-body">
       <h3 class="card-title">${esc(l.title)}</h3>
-      <div class="card-price">${num(l.price)} <small>${CURRENCY}</small></div>
+      <div class="card-price">${l.type==='wanted'?'مطلوب من ':''}${num(l.price)} <small>${CURRENCY}</small></div>
+      <div class="card-badges"><span>${CONDITIONS[l.condition||'used']||'مستعمل'}</span>${l.negotiable?'<span>قابل للتفاوض</span>':''}</div>
       ${rCount ? `<div class="card-rating"><span class="stars">${stars(r)}</span> (${rCount})</div>` : ''}
       <div class="card-meta">
         <span><svg class="ic"><use href="#i-pin"/></svg>${esc(l.city)}</span>
@@ -477,6 +483,8 @@ function openDetail(id){
 
       <div class="chips">
         <span class="chip"><svg class="ic"><use href="#i-tag"/></svg>${catObj(l.cat).em} ${catObj(l.cat).name}</span>
+        <span class="chip"><svg class="ic"><use href="#i-check-circle"/></svg>${CONDITIONS[l.condition||'used']||'مستعمل'}</span>
+        <span class="chip"><svg class="ic"><use href="#i-truck"/></svg>${l.delivery==='delivery'?'توصيل متاح':'استلام من البائع'}</span>
         <span class="chip"><svg class="ic"><use href="#i-pin"/></svg>${esc(l.city)}</span>
         <span class="chip"><svg class="ic"><use href="#i-clock"/></svg>${timeAgo(l.ts)}</span>
         <span class="chip"><svg class="ic"><use href="#i-eye"/></svg>${num(l.views)}</span>
@@ -494,6 +502,13 @@ function openDetail(id){
       <div>
         <div style="font-weight:800;margin-bottom:7px">📝 الوصف</div>
         <div class="desc-box">${esc(l.desc)}</div>
+      </div>
+
+      <div class="spec-grid">
+        ${l.brand?`<div><small>الماركة</small><b>${esc(l.brand)}</b></div>`:''}
+        ${l.model?`<div><small>الموديل</small><b>${esc(l.model)}</b></div>`:''}
+        <div><small>الكمية</small><b>${num(l.quantity||1)}</b></div>
+        <div><small>السعر</small><b>${l.negotiable?'قابل للتفاوض':'ثابت'}</b></div>
       </div>
 
       ${similar.length ? `
@@ -523,6 +538,9 @@ function openDetail(id){
         ` : `
           <button class="btn btn-primary btn-block" data-chat="${l.id}">
             <svg class="ic"><use href="#i-chat"/></svg> تواصل مع البائع
+          </button>
+          <button class="btn btn-accent btn-block" data-offer="${l.id}">
+            <svg class="ic"><use href="#i-tag"/></svg> أرسل عرض شراء
           </button>
           <div class="detail-actions-row">
             <button class="btn btn-ghost" data-showphone="${l.id}">
@@ -566,6 +584,7 @@ document.addEventListener('click', e=>{
   const shareB  = e.target.closest('[data-share]');
   const qrB     = e.target.closest('[data-qr]');
   const reportB = e.target.closest('[data-report]');
+  const offerB  = e.target.closest('[data-offer]');
   const printB  = e.target.closest('[data-print]');
   const profB   = e.target.closest('[data-profile]');
   const simB    = e.target.closest('[data-similar]');
@@ -592,6 +611,7 @@ document.addEventListener('click', e=>{
   if(shareB){ shareListing(shareB.dataset.share); }
   if(qrB){ showQR(qrB.dataset.qr); }
   if(reportB){ openReport(reportB.dataset.report); }
+  if(offerB){ openOffer(offerB.dataset.offer); }
   if(printB){ printListing(printB.dataset.print); }
   if(profB){ closeOverlay('#ovDetail'); openProfile(profB.dataset.profile); }
   if(simB){ closeOverlay('#ovDetail'); openDetail(simB.dataset.similar); }
@@ -606,6 +626,35 @@ document.addEventListener('click', e=>{
 });
 
 /* ============ 15) نشر إعلان ============ */
+function openOffer(listingId){
+  if(!currentUser){ openAuth('login'); toast('سجّل الدخول لإرسال عرض'); return; }
+  const l = listings.find(x=>x.id===listingId);
+  if(!l || l.userId===currentUser.id){ toast('لا يمكنك إرسال عرض على إعلانك','error'); return; }
+  activeOfferListingId = listingId;
+  const price = $('#offerPrice'); if(price) price.value = l.price || '';
+  const note = $('#offerNote'); if(note) note.value = '';
+  openOverlay('#ovOffer');
+}
+
+const offerForm = $('#formOffer');
+if(offerForm) offerForm.onsubmit = e=>{
+  e.preventDefault();
+  if(!currentUser || !activeOfferListingId) return;
+  const l = listings.find(x=>x.id===activeOfferListingId);
+  if(!l) return;
+  const amount = Number($('#offerPrice')?.value)||0;
+  if(amount<=0) return;
+  const note = $('#offerNote')?.value.trim() || '';
+  const text = `عرض شراء: ${num(amount)} ${CURRENCY}${note ? ` — ${note}` : ''}`;
+  msgs.push({id:uid(),from:currentUser.id,to:l.userId,listingId:l.id,text,ts:Date.now(),read:false,type:'offer',offerPrice:amount});
+  store.set(K.msgs,msgs);
+  pushNotif(l.userId,'msg',`${currentUser.name} أرسل عرض شراء على إعلانك`,l.id);
+  closeOverlay('#ovOffer');
+  toast('تم إرسال عرضك للبائع ✅','success');
+  activeOfferListingId = null;
+  updateBadges();
+};
+
 function setupAddBtn(){
   const btn = $('#addBtn');
   if(!btn) return;
@@ -645,8 +694,8 @@ function setupAddForm(){
   const fileInput = $('#fileInput');
   if(uploader && fileInput){
     uploader.onclick = ()=> fileInput.click();
-    fileInput.onchange = async e=>{
-      const files = [...e.target.files];
+    const addFiles = async files=>{
+      files = [...files];
       if(!files.length) return;
       if(pendingImages.length + files.length > 5){ toast('الحد الأقصى 5 صور','error'); }
       const take = files.slice(0, 5 - pendingImages.length);
@@ -655,9 +704,12 @@ function setupAddForm(){
         try{ pendingImages.push(await compressImage(file)); }catch(err){ console.warn(err); }
       }
       renderThumbs();
-      e.target.value = '';
       if(take.length) toast('تمت إضافة '+take.length+' صورة','success');
     };
+    fileInput.onchange = async e=>{ await addFiles(e.target.files); e.target.value = ''; };
+    uploader.ondragover = e=>{ e.preventDefault(); uploader.classList.add('dragover'); };
+    uploader.ondragleave = ()=>uploader.classList.remove('dragover');
+    uploader.ondrop = async e=>{ e.preventDefault(); uploader.classList.remove('dragover'); await addFiles(e.dataTransfer.files); };
   }
 
   const addUrlBtn = $('#addUrlBtn');
@@ -685,9 +737,17 @@ function setupAddForm(){
         title: String(f.get('title')).trim(),
         cat: String(f.get('cat')),
         city: String(f.get('city')),
+        type: String(f.get('type')||'sale'),
+        condition: String(f.get('condition')||'used'),
+        brand: String(f.get('brand')||'').trim(),
+        model: String(f.get('model')||'').trim(),
+        quantity: Math.max(1, Number(f.get('quantity'))||1),
         price: Number(f.get('price'))||0,
         phone: String(f.get('phone')||'').trim() || currentUser.phone,
         desc: String(f.get('desc')).trim(),
+        tags: String(f.get('tags')||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,10),
+        delivery: String(f.get('delivery')||'pickup'),
+        negotiable: f.get('negotiable') === 'on',
         images: pendingImages.slice(),
         featured: !!f.get('featured'),
         views: 0, ts: Date.now()
@@ -1136,6 +1196,8 @@ function closeOverlay(sel){
 function fillSelects(){
   const cityOpts = CITIES.map(c=>`<option value="${c}">${c}</option>`).join('');
   const fCity = $('#fCity');   if(fCity) fCity.innerHTML = `<option value="all">كل المدن</option>` + cityOpts;
+  const fCondition = $('#fCondition'); if(fCondition) fCondition.innerHTML = '<option value="all">كل الحالات</option>' + Object.entries(CONDITIONS).map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
+  const fType = $('#fType'); if(fType) fType.innerHTML = '<option value="all">بيع ومطلوب وبدل</option>' + Object.entries(LISTING_TYPES).map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
   const addCity = $('#addCity'); if(addCity) addCity.innerHTML = `<option value="">اختر المدينة</option>` + cityOpts;
   const regCity = $('#regCity'); if(regCity) regCity.innerHTML = `<option value="">اختر المدينة</option>` + cityOpts;
   const addCat = $('#addCat'); if(addCat) addCat.innerHTML = `<option value="">اختر القسم</option>` +
@@ -1143,11 +1205,13 @@ function fillSelects(){
 }
 
 function resetAll(){
-  filters = { q:'', cat:'all', city:'all', min:'', max:'', sort:'new' };
+  filters = { q:'', cat:'all', city:'all', min:'', max:'', condition:'all', type:'all', sort:'new' };
   const si = $('#searchInput'); if(si) si.value = '';
   const fc = $('#fCity'); if(fc) fc.value = 'all';
   const fm = $('#fMin'); if(fm) fm.value = '';
   const fx = $('#fMax'); if(fx) fx.value = '';
+  const fco = $('#fCondition'); if(fco) fco.value = 'all';
+  const fty = $('#fType'); if(fty) fty.value = 'all';
   const fs = $('#fSort'); if(fs) fs.value = 'new';
   $$('.cat').forEach(c=>c.classList.toggle('active', c.dataset.cat==='all'));
   $$('.filter-cat-item').forEach(c=>c.classList.toggle('active', c.dataset.cat==='all'));
@@ -1292,6 +1356,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(fMin) fMin.oninput = e=>{ filters.min = e.target.value; renderListings(); };
   const fMax = $('#fMax');
   if(fMax) fMax.oninput = e=>{ filters.max = e.target.value; renderListings(); };
+  const fCondition = $('#fCondition');
+  if(fCondition) fCondition.onchange = e=>{ filters.condition = e.target.value; renderListings(); };
+  const fType = $('#fType');
+  if(fType) fType.onchange = e=>{ filters.type = e.target.value; renderListings(); };
   const fSort = $('#fSort');
   if(fSort) fSort.onchange = e=>{ filters.sort = e.target.value; renderListings(); };
   const clearFilters = $('#clearFilters');

@@ -64,9 +64,17 @@ function cleanListing(body) {
     title: String(body.title || '').trim().slice(0, 180),
     cat: String(body.cat || '').slice(0, 60),
     city: String(body.city || '').slice(0, 80),
+    type: ['sale','wanted','exchange'].includes(body.type) ? body.type : 'sale',
+    condition: ['new','used','refurbished'].includes(body.condition) ? body.condition : 'used',
+    brand: String(body.brand || '').trim().slice(0, 80),
+    model: String(body.model || '').trim().slice(0, 100),
+    quantity: Math.max(1, Number(body.quantity) || 1),
     price: Number(body.price) || 0,
     phone: String(body.phone || '').trim().slice(0, 40),
     desc: String(body.desc || '').trim().slice(0, 5000),
+    tags: Array.isArray(body.tags) ? body.tags.slice(0, 10).map(x => String(x).trim().slice(0, 40)).filter(Boolean) : [],
+    delivery: body.delivery === 'delivery' ? 'delivery' : 'pickup',
+    negotiable: !!body.negotiable,
     images,
     featured: !!body.featured
   };

@@ -172,25 +172,25 @@
       <div class="slider-track" id="sliderTrack">
         <div class="slide slide-1">
           <div class="slide-content">
-            <span class="slide-badge">🔥 عروض رمضان</span>
-            <h2>أحدث الأجهزة الإلكترونية</h2>
-            <p>كل ما تحتاجه من إلكترونيات في مكان واحد — بأفضل الأسعار</p>
+            <span class="slide-badge">🛒 سوقك العراقي</span>
+            <h2>بيع واشترِ بثقة</h2>
+            <p>اعرض منتجك بالصور والمواصفات، وابحث عن أفضل عرض قريب منك.</p>
             <button class="btn btn-light" data-slide-go="electronics">تسوق الآن ←</button>
           </div>
         </div>
         <div class="slide slide-2">
           <div class="slide-content">
-            <span class="slide-badge">⭐ جديد</span>
-            <h2>سيارات بأفضل الأسعار</h2>
-            <p>تصفح مئات السيارات المعروضة من بائعين موثوقين</p>
+            <span class="slide-badge">⭐ عروض موثوقة</span>
+            <h2>كل التفاصيل قبل التواصل</h2>
+            <p>حالة المنتج، السعر، التوصيل، التفاوض وتقييم البائع في مكان واحد.</p>
             <button class="btn btn-light" data-slide-go="cars">تصفح السيارات ←</button>
           </div>
         </div>
         <div class="slide slide-3">
           <div class="slide-content">
-            <span class="slide-badge">🎁 عرض خاص</span>
-            <h2>عقارات في كل المدن</h2>
-            <p>شقق، بيوت، أراضي — بأفضل الأسعار وأكثر المواقع</p>
+            <span class="slide-badge">📍 بكل المحافظات</span>
+            <h2>ابحث حسب مدينتك وميزانيتك</h2>
+            <p>فلاتر ذكية للمدينة، الحالة، نوع الإعلان والسعر حتى توصل بسرعة.</p>
             <button class="btn btn-light" data-slide-go="realestate">تصفح العقارات ←</button>
           </div>
         </div>
@@ -313,6 +313,16 @@
         <div class="filter-body">
           <select id="fCity" class="inp-select"></select>
         </div>
+      </div>
+
+      <div class="filter-box">
+        <div class="filter-head">نوع الإعلان</div>
+        <div class="filter-body"><select id="fType" class="inp-select"></select></div>
+      </div>
+
+      <div class="filter-box">
+        <div class="filter-head">الحالة</div>
+        <div class="filter-body"><select id="fCondition" class="inp-select"></select></div>
       </div>
 
       <div class="filter-box">
@@ -469,10 +479,23 @@
           <div class="form-row"><label>المدينة <i>*</i></label><select class="inp" name="city" id="addCity" required></select></div>
         </div>
         <div class="form-2">
+          <div class="form-row"><label>نوع الإعلان <i>*</i></label><select class="inp" name="type" required><option value="sale">للبيع</option><option value="wanted">مطلوب</option><option value="exchange">بدل/تبادل</option></select></div>
+          <div class="form-row"><label>حالة المنتج <i>*</i></label><select class="inp" name="condition" required><option value="new">جديد</option><option value="used" selected>مستعمل</option><option value="refurbished">مجدد</option></select></div>
+        </div>
+        <div class="form-2">
           <div class="form-row"><label>السعر <i>*</i></label><input class="inp" name="price" type="number" min="0" placeholder="0" required/></div>
+          <div class="form-row"><label>الكمية</label><input class="inp" name="quantity" type="number" min="1" value="1"/></div>
+        </div>
+        <div class="form-2">
+          <div class="form-row"><label>الماركة</label><input class="inp" name="brand" placeholder="مثال: Apple، Toyota"/></div>
+          <div class="form-row"><label>الموديل / القياس</label><input class="inp" name="model" placeholder="مثال: iPhone 15 Pro"/></div>
+        </div>
+        <div class="form-2">
           <div class="form-row"><label>رقم التواصل</label><input class="inp" name="phone" type="tel" placeholder="اتركه فارغاً لاستخدام رقم حسابك"/></div>
+          <div class="form-row"><label>طريقة التسليم</label><select class="inp" name="delivery"><option value="pickup">استلام من البائع</option><option value="delivery">توصيل داخل المدينة</option></select></div>
         </div>
         <div class="form-row"><label>الوصف <i>*</i></label><textarea class="inp" name="desc" placeholder="اكتب تفاصيل الغرض..." maxlength="1500" required></textarea></div>
+        <div class="form-row"><label>كلمات البحث</label><input class="inp" name="tags" placeholder="مثال: موبايل، 256GB، نظيف"/><span class="hint">افصل الكلمات بفاصلة حتى يظهر إعلانك في البحث.</span></div>
         <div class="form-row">
           <label>الصور</label>
           <div class="uploader" id="uploader">
@@ -480,7 +503,7 @@
             <b>اضغط لإضافة صور</b>
             <span>حتى 5 صور — JPG / PNG / WEBP</span>
           </div>
-          <input type="file" id="fileInput" accept="image/*" multiple hidden/>
+          <input type="file" id="fileInput" accept="image/*" capture="environment" multiple hidden/>
           <div class="thumbs" id="thumbs"></div>
         </div>
         <div class="form-row">
@@ -494,6 +517,7 @@
           <input type="checkbox" name="featured"/>
           <span>ترقية الإعلان (يظهر في المقدمة) ⭐</span>
         </label>
+        <label class="check-row"><input type="checkbox" name="negotiable"/> <span>السعر قابل للتفاوض</span></label>
       </form>
     </div>
     <div class="modal-foot">
@@ -580,6 +604,19 @@
       </div>
       <div class="form-row"><label>تفاصيل إضافية</label><textarea class="inp" id="reportNote" rows="3"></textarea></div>
       <button class="btn btn-danger btn-block" id="sendReport">إرسال الإبلاغ</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovOffer">
+  <div class="modal sm">
+    <div class="modal-head"><h2>🏷️ إرسال عرض شراء</h2><button class="close-x" data-close><svg class="ic"><use href="#i-close"/></svg></button></div>
+    <div class="modal-body">
+      <form id="formOffer">
+        <div class="form-row"><label>السعر المقترح <i>*</i></label><input class="inp" id="offerPrice" type="number" min="0" required/></div>
+        <div class="form-row"><label>رسالتك للبائع</label><textarea class="inp" id="offerNote" rows="4" placeholder="اكتب تفاصيل العرض أو وقت الاستلام..."></textarea></div>
+        <button class="btn btn-accent btn-block" type="submit">إرسال العرض</button>
+      </form>
     </div>
   </div>
 </div>
